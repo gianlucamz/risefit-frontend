@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+/* Cores e fontes do projeto (viram classes: bg-brand, text-brand, bg-dark, font-display) */
+@theme inline {
+  --color-brand: #7c3aed;
+  --color-dark: #0b0b12;
+
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-anton);
+}
+
+/* Rolagem suave ao clicar em links como /#planos */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #f8f9fa;
+}
+
+/* Forma de hexágono (usada na Hero) */
+.hexagono {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
