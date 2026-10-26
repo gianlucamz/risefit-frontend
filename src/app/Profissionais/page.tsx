@@ -1,7 +1,15 @@
+import ProfissionaisBanner from "@/components/ProfissionaisBanner";
+import ProfissionaisExplorar from "@/components/ProfissionaisExplorar";
+
+export const metadata = {
+  title: "Profissionais | RiseFit",
+};
+
 export default function Profissionais() {
   return (
     <main>
-      <h1>Profissionais</h1>
+      <ProfissionaisBanner />
+      <ProfissionaisExplorar />
     </main>
   );
 }

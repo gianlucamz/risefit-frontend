@@ -2,11 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 export default function Header() {
   // true = menu do celular aberto, false = fechado
   const [menuAberto, setMenuAberto] = useState(false);
+
+  // Destaca em roxo o link da página de Profissionais quando ela está aberta
+  const naPaginaProfissionais = usePathname() === "/profissionais";
+  const classeProfissionais = naPaginaProfissionais ? "text-brand" : "";
 
   function fecharMenu() {
     setMenuAberto(false);
@@ -33,7 +38,7 @@ export default function Header() {
         <nav className="hidden gap-10 text-lg lg:flex">
           <Link href="/">Home</Link>
           <Link href="/#planos">Planos</Link>
-          <Link href="/profissionais">Profissionais</Link>
+          <Link href="/profissionais" className={classeProfissionais}>Profissionais</Link>
           <Link href="/loja">Loja</Link>
           <Link href="/sobre-nos">Sobre nós</Link>
         </nav>
@@ -96,7 +101,7 @@ export default function Header() {
         <nav className="flex flex-col gap-5 border-t border-white/10 px-6 py-6 text-lg lg:hidden">
           <Link href="/" onClick={fecharMenu}>Home</Link>
           <Link href="/#planos" onClick={fecharMenu}>Planos</Link>
-          <Link href="/profissionais" onClick={fecharMenu}>Profissionais</Link>
+          <Link href="/profissionais" onClick={fecharMenu} className={classeProfissionais}>Profissionais</Link>
           <Link href="/loja" onClick={fecharMenu}>Loja</Link>
           <Link href="/sobre-nos" onClick={fecharMenu}>Sobre nós</Link>
           <Link href="/area-aluno" onClick={fecharMenu}>Área do Aluno</Link>

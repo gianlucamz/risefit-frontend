@@ -134,14 +134,7 @@ export default function Hero() {
 
             {/* Homem com halteres (por cima de tudo) */}
             <div className="absolute left-0 top-[17.5%] h-[82.36%] w-[60.47%]">
-              <Image
-                src="/images/hero-homem.png"
-                alt="Homem segurando halteres"
-                fill
-                priority
-                sizes="(min-width: 1024px) 40vw, 80vw"
-                className="object-contain object-bottom"
-              />
+
             </div>
 
             {/* Bolinhas decorativas */}
