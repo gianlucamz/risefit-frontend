@@ -104,7 +104,7 @@ export default function Header() {
           <Link href="/profissionais" onClick={fecharMenu} className={classeProfissionais}>Profissionais</Link>
           <Link href="/loja" onClick={fecharMenu}>Loja</Link>
           <Link href="/sobre-nos" onClick={fecharMenu}>Sobre nós</Link>
-          <Link href="/area-aluno" onClick={fecharMenu}>Área do Aluno</Link>
+          <Link href="/area-do-aluno">Área do Aluno</Link>
           <Link
             href="/#planos"
             onClick={fecharMenu}

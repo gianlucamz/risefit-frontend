@@ -1,43 +1,53 @@
 import Image from "next/image";
 import Link from "next/link";
 
-// O banner é uma imagem pronta (public/banner.png, 1600x800).
-// Os textos já fazem parte da imagem, então o título abaixo é só para leitores de tela.
+// O banner é uma imagem pronta (public/banner2.png, 2243x701).
+// Os textos sobre a imagem são HTML; o título sr-only é para leitores de tela.
 export default function ProfissionaisBanner() {
   return (
     <section className="bg-dark text-white">
-      {/* Ocupa a largura toda da tela. Em telas muito largas, corta só a parte de baixo
-          (object-top) para o banner não ficar mais alto que a janela. */}
-      <div className="relative aspect-[2/1] w-full min-[1700px]:aspect-[2.2/1]">
+      {/* Largura total da tela, sem bordas laterais.
+          [container-type:inline-size] faz o texto escalar pela largura do banner (cqw). */}
+      <div className="relative w-full [container-type:inline-size]">
         <h1 className="sr-only">Encontre seu personal</h1>
 
-        <Image
-          src="/banner.png"
-          alt="Personal trainer auxiliando uma aluna em exercício com barra. Encontre seu personal: profissionais que te acompanham durante toda sua jornada. @risefitacademy"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-top"
-        />
+        {/* Mesma proporção da imagem: nada é cortado em nenhuma tela */}
+        <div className="relative aspect-[2243/701] w-full">
+          <Image
+            src="/banner2.png"
+            alt="Personal trainer auxiliando uma aluna em exercício com barra. Encontre seu personal: profissionais que te acompanham durante toda sua jornada. @risefitacademy"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+        </div>
 
-        {/* Botão sobre a imagem (a partir de telas médias), alinhado à direita,
-            no espaço livre entre o subtítulo e o @RISEFITACADEMY */}
-        <Link
-          href="#profissionais"
-          className="absolute right-[4.5%] top-[72%] hidden whitespace-nowrap rounded-full bg-brand px-[2.2vw] py-[0.65vw] text-[clamp(11px,1.15vw,20px)] font-semibold uppercase min-[1700px]:top-[79%] min-[1700px]:px-10 min-[1700px]:py-3 md:inline-block"
-        >
-          Agende sua consulta
-        </Link>
-      </div>
+        {/* Texto: no desktop fica sobre a parte escura da direita, centralizado na vertical.
+            No celular fica abaixo da imagem, para não ficar minúsculo. */}
+        <div className="px-5 py-6 md:absolute md:inset-y-0 md:left-[55%] md:right-[4%] md:flex md:flex-col md:justify-center md:p-0">
+          <p
+            aria-hidden="true"
+            className="whitespace-nowrap text-left text-4xl font-black uppercase leading-[0.9] tracking-tight text-white md:text-[4.6cqw]"
+          >
+            Encontre
+            <br />
+            seu personal
+          </p>
 
-      {/* No celular o botão fica logo abaixo da imagem, para não ficar minúsculo */}
-      <div className="flex justify-center px-6 py-6 md:hidden">
-        <Link
-          href="#profissionais"
-          className="rounded-full bg-brand px-10 py-3 text-base font-semibold uppercase"
-        >
-          Agende sua consulta
-        </Link>
+          <p
+            aria-hidden="true"
+            className="ml-auto mt-3 text-right text-lg font-extrabold uppercase leading-none text-[#FFF8DC] md:mt-[1.6cqw] md:text-[2.2cqw]"
+          >
+            Profissionais que te
+            <br />
+            acompanham
+            <br />
+            durante toda sua
+            <br />
+            jornada.
+          </p>
+        </div>
       </div>
     </section>
   );

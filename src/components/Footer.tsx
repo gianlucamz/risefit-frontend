@@ -51,7 +51,7 @@ export default function Footer() {
           <div>
             <Link href="/" className="flex items-center gap-2">
               <Image
-                src="/logo-icon.svg"
+                src="/logo.png"
                 alt="Ícone RiseFit"
                 width={52}
                 height={36}

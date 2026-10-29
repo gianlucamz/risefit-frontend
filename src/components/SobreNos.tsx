@@ -1,4 +1,5 @@
-// Os 3 pilares da seção. Para mudar os textos, é só editar aqui.
+import Image from "next/image";
+
 const pilares = [
   {
     titulo: "Acolhimento sem insegurança",
@@ -25,15 +26,15 @@ export default function SobreNos() {
         <p className="text-center text-xs tracking-widest text-gray-600">
           SOBRE NÓS
         </p>
-        <h2 className="mt-4 max-w-xl border-b border-gray-400 pb-4 text-2xl font-bold lg:text-3xl">
+        <h2 className="mt-4 max-w-4xl border-b-2 border-black pb-4 text-3xl font-bold lg:text-4xl">
           Mais do que um espaço de treino.
           <br />
-          O suporte que você precisa para evoluir.
+          <span className="text-[#7c3aed]">O suporte que você precisa para evoluir.</span>
         </h2>
 
         {/* Texto + imagem lado a lado */}
-        <div className="mt-10 grid items-start gap-10 lg:grid-cols-2">
-          <p className="max-w-xl leading-relaxed">
+        <div className="mt-10 grid gap-10 lg:grid-cols-2 lg:items-center">
+          <p className="max-w-2xl text-lg leading-relaxed lg:text-xl">
             Iniciar uma rotina de exercícios não precisa ser difícil, solitário
             ou intimidador. Na RiseFit, entendemos que o maior desafio não é
             apenas ir à academia, mas sentir-se seguro e orientado em cada passo
@@ -43,24 +44,32 @@ export default function SobreNos() {
             sua jornada dentro e fora do treino.
           </p>
 
-          {/* Caixa preta provisória: depois trocamos por uma foto ou vídeo */}
-          <div className="aspect-video w-full bg-black" />
+          {/* Imagem */}
+          <div className="relative aspect-video w-full overflow-hidden rounded-2xl">
+            <Image
+              src="/sobrenos.png"
+              alt="imagem sobre nos"
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover"
+            />
+          </div>
         </div>
 
         {/* Nossos pilares */}
-        <h3 className="mt-16 text-xl font-bold">Nossos pilares</h3>
+        <h3 className="mt-16 text-2xl font-bold lg:text-3xl">Nossos pilares</h3>
 
-        <div className="mt-6 border-t border-gray-300">
+        <div className="mt-6 border-t-2 border-black">
           {pilares.map((pilar, indice) => (
             <div
               key={pilar.titulo}
-              className="grid gap-3 border-b border-gray-300 py-6 lg:grid-cols-2 lg:gap-10"
+              className="grid gap-3 border-b-1 border-black py-8 lg:grid-cols-2 lg:gap-10"
             >
               <div className="flex items-start gap-6">
-                <span className="text-sm">{indice + 1}</span>
-                <p className="max-w-xs font-medium">{pilar.titulo}</p>
+                <span className="w-6 text-base text-[#7c3aed] lg:text-lg">{indice + 1}</span>
+                <p className="max-w-sm text-lg font-medium lg:text-xl">{pilar.titulo}</p>
               </div>
-              <p className="max-w-md text-gray-700">{pilar.descricao}</p>
+              <p className="max-w-lg text-base text-gray-700 lg:text-lg">{pilar.descricao}</p>
             </div>
           ))}
         </div>
