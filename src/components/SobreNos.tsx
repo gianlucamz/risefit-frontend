@@ -21,20 +21,19 @@ const pilares = [
 export default function SobreNos() {
   return (
     <section id="sobre-nos" className="scroll-mt-24 pb-16 lg:pb-24">
-      <div className="mx-auto max-w-[1440px] px-6 lg:px-14">
-        {/* Título da seção */}
-        <p className="text-center text-xs tracking-widest text-gray-600">
+      <div className="mx-auto max-w-360 px-6 lg:px-14">
+        <p className="text-center text-sm text-gray-900 font-semibold">
           SOBRE NÓS
         </p>
-        <h2 className="mt-4 max-w-4xl border-b-2 border-black pb-4 text-3xl font-bold lg:text-4xl">
+        <h2 className="mt-4 max-w-3xl border-b-2 border-black pb-4 text-3xl font-bold lg:text-4xl">
           Mais do que um espaço de treino.
           <br />
-          <span className="text-[#7c3aed]">O suporte que você precisa para evoluir.</span>
+          <span className="text-brand">O suporte que você precisa para evoluir.</span>
         </h2>
 
         {/* Texto + imagem lado a lado */}
         <div className="mt-10 grid gap-10 lg:grid-cols-2 lg:items-center">
-          <p className="max-w-2xl text-lg leading-relaxed lg:text-xl">
+          <p className="max-w-xl text-lg lg:text-2xl">
             Iniciar uma rotina de exercícios não precisa ser difícil, solitário
             ou intimidador. Na RiseFit, entendemos que o maior desafio não é
             apenas ir à academia, mas sentir-se seguro e orientado em cada passo
@@ -57,19 +56,19 @@ export default function SobreNos() {
         </div>
 
         {/* Nossos pilares */}
-        <h3 className="mt-16 text-2xl font-bold lg:text-3xl">Nossos pilares</h3>
+        <h3 className="mt-16 ml-10 text-2xl font-bold lg:text-4xl">Nossos pilares</h3>
 
         <div className="mt-6 border-t-2 border-black">
           {pilares.map((pilar, indice) => (
             <div
               key={pilar.titulo}
-              className="grid gap-3 border-b-1 border-black py-8 lg:grid-cols-2 lg:gap-10"
+              className="grid gap-3 border-b border-black py-8 lg:grid-cols-2 lg:gap-10"
             >
               <div className="flex items-start gap-6">
-                <span className="w-6 text-base text-[#7c3aed] lg:text-lg">{indice + 1}</span>
-                <p className="max-w-sm text-lg font-medium lg:text-xl">{pilar.titulo}</p>
+                <span className="w-10 text-base text-brand lg:text-xl mt-3">{indice + 1}</span>
+                <p className="max-w-xs text-lg font-semibold lg:text-2xl">{pilar.titulo}</p>
               </div>
-              <p className="max-w-lg text-base text-gray-700 lg:text-lg">{pilar.descricao}</p>
+              <p className="max-w-lg text-black lg:text-2xl tracking-tight leading-tight">{pilar.descricao}</p>
             </div>
           ))}
         </div>

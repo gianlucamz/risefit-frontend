@@ -6,10 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 export default function Header() {
-  // true = menu do celular aberto, false = fechado
   const [menuAberto, setMenuAberto] = useState(false);
-
-  // Destaca em roxo o link da página de Profissionais quando ela está aberta
   const naPaginaProfissionais = usePathname() === "/profissionais";
   const classeProfissionais = naPaginaProfissionais ? "text-brand" : "";
 
@@ -20,7 +17,6 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-dark text-white">
       <div className="mx-auto flex h-20 max-w-[1440px] items-center justify-between px-6 lg:h-[100px] lg:px-14">
-        {/* Logo: ícone + texto */}
         <Link href="/" className="flex items-center gap-2" onClick={fecharMenu}>
           <Image
             src="/logo.png"
@@ -34,7 +30,6 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Menu de navegação (só aparece no desktop) */}
         <nav className="hidden gap-10 text-lg lg:flex">
           <Link href="/">Home</Link>
           <Link href="/#planos">Planos</Link>
@@ -42,7 +37,7 @@ export default function Header() {
             Profissionais
           </Link>
           <Link href="/loja">Loja</Link>
-          <Link href="/sobre-nos">Sobre nós</Link>
+          <Link href="#sobre-nos">Sobre nós</Link>
         </nav>
 
         {/* Lado direito (só aparece no desktop) */}
