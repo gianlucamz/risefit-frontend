@@ -45,7 +45,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-dark text-white">
-      <div className="mx-auto max-w-[1440px] px-6 py-12 lg:px-14">
+      <div className="mx-auto max-w-360 px-6 py-12 lg:px-14">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr]">
           {/* Logo + endereço */}
           <div>
@@ -53,29 +53,26 @@ export default function Footer() {
               <Image
                 src="/logo.png"
                 alt="Ícone RiseFit"
-                width={52}
+                width={64}
                 height={36}
-                className="h-auto w-10"
+                className="h-auto w-16"
               />
-              <span className="text-2xl font-extrabold italic">
+              <span className="text-4xl font-extrabold italic">
                 Rise<span className="text-brand">Fit</span>
               </span>
             </Link>
 
-            {/* Troque pelo endereço real da academia */}
-            <address className="mt-4 text-sm not-italic leading-relaxed text-gray-400">
-              Av. Exemplo, 123 - Centro
+            <address className="mt-4 text-sm not-italic leading-relaxed tracking-tight text-white">
+              Avenida Acre, 243 - Indaiá, Caraguatatuba - SP
               <br />
-              Cidade - SP, 00000-000
-              <br />
-              Segunda a domingo, das 6h às 22h
+              06:00 às 22:00 - Segunda a Sábado, horário de Brasília
             </address>
           </div>
 
           {/* Colunas de links */}
           {colunas.map((coluna) => (
             <div key={coluna.titulo}>
-              <h3 className="text-xs font-semibold tracking-widest text-gray-400">
+              <h3 className="text-md font-semibold tracking-widest text-gray-400">
                 {coluna.titulo}
               </h3>
               <ul className="mt-4 flex flex-col gap-2 text-sm">

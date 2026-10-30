@@ -7,7 +7,9 @@ export default function Home() {
     <main>
       <Hero />
       <Planos />
-      <SobreNos />
+      <section id="sobre-nos">
+        <SobreNos />
+      </section>
     </main>
   );
 }
