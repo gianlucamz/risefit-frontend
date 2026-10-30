@@ -18,7 +18,8 @@ const planos = [
   },
   {
     nome: "Personalizado",
-    descricao: "O plano completo para quem busca resultados com acompanhamento.",
+    descricao:
+      "O plano completo para quem busca resultados com acompanhamento.",
     preco: "139,90",
     beneficios: [
       "Tudo do plano Essencial",
@@ -110,7 +111,7 @@ export default function Planos() {
 
               {/* Botão (o link "#" é provisório, depois trocamos) */}
               <Link
-                href="#"
+                href={`/cadastro?plano=${plano.nome.toLowerCase()}`}
                 className={`mt-8 rounded-lg px-6 py-3 text-center text-sm font-medium ${
                   plano.destaque
                     ? "bg-brand text-white"

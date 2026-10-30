@@ -38,7 +38,9 @@ export default function Header() {
         <nav className="hidden gap-10 text-lg lg:flex">
           <Link href="/">Home</Link>
           <Link href="/#planos">Planos</Link>
-          <Link href="/profissionais" className={classeProfissionais}>Profissionais</Link>
+          <Link href="/profissionais" className={classeProfissionais}>
+            Profissionais
+          </Link>
           <Link href="/loja">Loja</Link>
           <Link href="/sobre-nos">Sobre nós</Link>
         </nav>
@@ -62,10 +64,9 @@ export default function Header() {
               <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
             </svg>
           </Link>
-
           <Link
-            href="/#planos"
-            className="rounded-xl bg-brand px-6 py-2.5 font-semibold"
+            href="/cadastro"
+            className="rounded-lg bg-[#7c3aed] px-5 py-2 text-white"
           >
             Inscreva-se
           </Link>
@@ -99,11 +100,25 @@ export default function Header() {
       {/* Menu do celular (aparece quando menuAberto é true) */}
       {menuAberto && (
         <nav className="flex flex-col gap-5 border-t border-white/10 px-6 py-6 text-lg lg:hidden">
-          <Link href="/" onClick={fecharMenu}>Home</Link>
-          <Link href="/#planos" onClick={fecharMenu}>Planos</Link>
-          <Link href="/profissionais" onClick={fecharMenu} className={classeProfissionais}>Profissionais</Link>
-          <Link href="/loja" onClick={fecharMenu}>Loja</Link>
-          <Link href="/sobre-nos" onClick={fecharMenu}>Sobre nós</Link>
+          <Link href="/" onClick={fecharMenu}>
+            Home
+          </Link>
+          <Link href="/#planos" onClick={fecharMenu}>
+            Planos
+          </Link>
+          <Link
+            href="/profissionais"
+            onClick={fecharMenu}
+            className={classeProfissionais}
+          >
+            Profissionais
+          </Link>
+          <Link href="/loja" onClick={fecharMenu}>
+            Loja
+          </Link>
+          <Link href="/sobre-nos" onClick={fecharMenu}>
+            Sobre nós
+          </Link>
           <Link href="/area-do-aluno">Área do Aluno</Link>
           <Link
             href="/#planos"
