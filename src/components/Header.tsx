@@ -16,14 +16,14 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-dark text-white">
-      <div className="mx-auto flex h-20 max-w-[1440px] items-center justify-between px-6 lg:h-[100px] lg:px-14">
+      <div className="mx-auto flex h-20 max-w-360 items-center justify-between px-6 lg:h-25 lg:px-14">
         <Link href="/" className="flex items-center gap-2" onClick={fecharMenu}>
           <Image
             src="/logo.png"
             alt="Ícone RiseFit"
             width={52}
             height={36}
-            className="h-auto w-10 lg:w-[52px]"
+            className="h-auto w-10 lg:w-13"
           />
           <span className="text-2xl font-extrabold italic lg:text-[34px]">
             Rise<span className="text-brand">Fit</span>
@@ -40,7 +40,6 @@ export default function Header() {
           <Link href="#sobre-nos">Sobre nós</Link>
         </nav>
 
-        {/* Lado direito (só aparece no desktop) */}
         <div className="hidden items-center gap-8 text-lg lg:flex">
           <Link href="/area-aluno" className="flex items-center gap-2">
             Área do Aluno
@@ -61,13 +60,12 @@ export default function Header() {
           </Link>
           <Link
             href="/cadastro"
-            className="rounded-lg bg-[#7c3aed] px-5 py-2 text-white"
+            className="rounded-lg bg-brand px-5 py-2 text-white"
           >
             Inscreva-se
           </Link>
         </div>
 
-        {/* Botão do menu (só aparece no celular) */}
         <button
           type="button"
           className="lg:hidden"

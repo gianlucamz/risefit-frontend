@@ -47,7 +47,7 @@ export function BotaoVoltar({
       type="button"
       onClick={handleClick}
       aria-label={ariaLabel}
-      className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-800 transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7c3aed] focus-visible:ring-offset-2 shrink-0 cursor-pointer shadow-xs"
+      className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-800 transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 shrink-0 cursor-pointer shadow-xs"
     >
       <svg
         aria-hidden="true"
@@ -83,9 +83,9 @@ export function LogoRiseFit({ className = "" }: { className?: string }) {
       />
       <span
         aria-hidden="true"
-        className="text-[28px] sm:text-[32px] font-black italic tracking-tight text-[#0b0b12]"
+        className="text-[28px] sm:text-[32px] font-black italic tracking-tight text-dark"
       >
-        Rise<span className="text-[#7c3aed]">Fit</span>
+        Rise<span className="text-brand">Fit</span>
       </span>
     </div>
   );
@@ -137,10 +137,10 @@ export function CampoFormulario({
           required={obrigatorio}
           aria-invalid={Boolean(erro)}
           aria-describedby={erro ? `${id}-erro` : undefined}
-          className={`h-12 w-full rounded-md border bg-white px-4 text-sm sm:text-base text-gray-900 placeholder:text-gray-400 placeholder:font-normal transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/20 ${
+          className={`h-12 w-full rounded-md border bg-white px-4 text-sm sm:text-base text-gray-900 placeholder:text-gray-400 placeholder:font-normal transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-brand/20 ${
             erro
               ? "border-red-500 focus:border-red-500"
-              : "border-gray-300 focus:border-[#7c3aed]"
+              : "border-gray-300 focus:border-brand"
           }`}
         />
       </div>
@@ -165,7 +165,7 @@ export function AvisoPrivacidade() {
         nossa{" "}
         <Link
           href="/politica-de-privacidade"
-          className="text-[#6b7280] hover:text-[#7c3aed] underline underline-offset-2 transition-colors"
+          className="text-[#6b7280] hover:text-brand underline underline-offset-2 transition-colors"
         >
           Política de Privacidade
         </Link>
@@ -208,11 +208,46 @@ export default function CadastroForm({
   titulo = "Sua jornada RiseFit começa agora!",
   mostrarBotaoMock = false,
 }: CadastroFormProps) {
-  const [nome, setNome] = useState(dadosIniciais?.nome ?? "");
-  const [email, setEmail] = useState(dadosIniciais?.email ?? "");
-  const [celular, setCelular] = useState(
-    dadosIniciais?.celular ? formatarTelefone(dadosIniciais.celular) : "",
-  );
+  const router = useRouter();
+
+  const [nome, setNome] = useState(() => {
+    if (dadosIniciais?.nome) return dadosIniciais.nome;
+    if (typeof window !== "undefined") {
+      try {
+        const salvo = sessionStorage.getItem("risefit_cadastro_step1");
+        if (salvo) return JSON.parse(salvo).nome || "";
+      } catch {
+        // Ignora erro
+      }
+    }
+    return "";
+  });
+
+  const [email, setEmail] = useState(() => {
+    if (dadosIniciais?.email) return dadosIniciais.email;
+    if (typeof window !== "undefined") {
+      try {
+        const salvo = sessionStorage.getItem("risefit_cadastro_step1");
+        if (salvo) return JSON.parse(salvo).email || "";
+      } catch {
+        // Ignora erro
+      }
+    }
+    return "";
+  });
+
+  const [celular, setCelular] = useState(() => {
+    if (dadosIniciais?.celular) return formatarTelefone(dadosIniciais.celular);
+    if (typeof window !== "undefined") {
+      try {
+        const salvo = sessionStorage.getItem("risefit_cadastro_step1");
+        if (salvo) return formatarTelefone(JSON.parse(salvo).celular || "");
+      } catch {
+        // Ignora erro
+      }
+    }
+    return "";
+  });
 
   const [erros, setErros] = useState<Record<string, string>>({});
   const [carregando, setCarregando] = useState(false);
@@ -274,11 +309,18 @@ export default function CadastroForm({
         celular: celular.trim(),
       };
 
-      if (aoCompletar) {
-        aoCompletar(payload);
+      try {
+        sessionStorage.setItem("risefit_cadastro_step1", JSON.stringify(payload));
+      } catch {
+        // Ignora erro de sessionStorage
       }
 
-      setSucesso(true);
+      if (aoCompletar) {
+        aoCompletar(payload);
+        setSucesso(true);
+      } else {
+        router.push("/cadastro/complemento");
+      }
     } finally {
       setCarregando(false);
     }
@@ -291,7 +333,7 @@ export default function CadastroForm({
           <button
             type="button"
             onClick={preencherComMock}
-            className="rounded border border-purple-200 bg-purple-50 px-2.5 py-1 font-medium text-[#7c3aed] hover:bg-purple-100 transition-colors cursor-pointer"
+            className="rounded border border-purple-200 bg-purple-50 px-2.5 py-1 font-medium text-brand hover:bg-purple-100 transition-colors cursor-pointer"
           >
             Preencher Mock
           </button>
@@ -305,7 +347,7 @@ export default function CadastroForm({
         </div>
       )}
 
-      <div className="relative mx-auto max-w-[840px]">
+      <div className="relative mx-auto max-w-210">
         <div className="flex items-center justify-between sm:justify-center">
           <div className="sm:absolute sm:left-0 sm:top-0">
             <BotaoVoltar />
@@ -323,7 +365,7 @@ export default function CadastroForm({
         </div>
       </div>
 
-      <div className="mx-auto mt-8 sm:mt-9 max-w-[640px]">
+      <div className="mx-auto mt-8 sm:mt-9 max-w-160">
         {sucesso ? (
           <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-center animate-fade-in">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600">
@@ -351,7 +393,7 @@ export default function CadastroForm({
             <div className="mt-5">
               <Link
                 href="/#planos"
-                className="inline-block rounded-full bg-[#7c3aed] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#6d28d9] transition-colors"
+                className="inline-block rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#6d28d9] transition-colors"
               >
                 Ver Planos
               </Link>
@@ -421,7 +463,7 @@ export default function CadastroForm({
               <button
                 type="submit"
                 disabled={carregando}
-                className="w-full rounded-full bg-[#7c3aed] py-3.5 sm:py-4 px-6 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#6d28d9] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7c3aed] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
+                className="w-full rounded-full bg-brand py-3.5 sm:py-4 px-6 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:bg-brand active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
               >
                 {carregando ? (
                   <span className="flex items-center justify-center gap-2">
