@@ -48,7 +48,10 @@ export function formatarData(valor: string): string {
   return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4, 8)}`;
 }
 
-export function validarDataNascimento(data: string): { valido: boolean; mensagem?: string } {
+export function validarDataNascimento(data: string): {
+  valido: boolean;
+  mensagem?: string;
+} {
   const limpo = data.replace(/\D/g, "");
   if (limpo.length !== 8) {
     return { valido: false, mensagem: "Informe a data no formato DD/MM/AAAA." };
@@ -81,7 +84,10 @@ export function validarDataNascimento(data: string): { valido: boolean; mensagem
   }
 
   if (idade < 12) {
-    return { valido: false, mensagem: "É necessário ter no mínimo 12 anos para se cadastrar." };
+    return {
+      valido: false,
+      mensagem: "É necessário ter no mínimo 12 anos para se cadastrar.",
+    };
   }
 
   return { valido: true };
@@ -213,7 +219,10 @@ export function CampoFormulario({
         />
       </div>
       {erro && (
-        <p id={`${id}-erro`} className="mt-1.5 text-xs text-red-600 font-medium">
+        <p
+          id={`${id}-erro`}
+          className="mt-1.5 text-xs text-red-600 font-medium"
+        >
           {erro}
         </p>
       )}
@@ -295,12 +304,19 @@ export function CampoSelect({
             stroke="currentColor"
             strokeWidth={2}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </div>
       </div>
       {erro && (
-        <p id={`${id}-erro`} className="mt-1.5 text-xs text-red-600 font-medium">
+        <p
+          id={`${id}-erro`}
+          className="mt-1.5 text-xs text-red-600 font-medium"
+        >
           {erro}
         </p>
       )}
@@ -363,14 +379,16 @@ export default function CadastroComplementoForm({
   aoCompletar,
   mostrarBotaoMock = false,
 }: CadastroComplementoFormProps) {
+  const router = useRouter();
+
   const [cpf, setCpf] = useState(
-    dadosIniciais?.cpf ? formatarCPF(dadosIniciais.cpf) : ""
+    dadosIniciais?.cpf ? formatarCPF(dadosIniciais.cpf) : "",
   );
   const [sexo, setSexo] = useState(dadosIniciais?.sexo ?? "");
   const [dataNascimento, setDataNascimento] = useState(
     dadosIniciais?.dataNascimento
       ? formatarData(dadosIniciais.dataNascimento)
-      : ""
+      : "",
   );
 
   const [dadosEtapa1] = useState<{
@@ -460,16 +478,16 @@ export default function CadastroComplementoForm({
       try {
         sessionStorage.setItem(
           "risefit_cadastro_completo",
-          JSON.stringify(payloadFinal)
+          JSON.stringify(payloadFinal),
         );
-      } catch {
-      }
+      } catch {}
 
       if (aoCompletar) {
         aoCompletar(payloadFinal);
+        setSucesso(true);
+      } else {
+        router.push("/cadastro/endereco");
       }
-
-      setSucesso(true);
     } finally {
       setCarregando(false);
     }
@@ -498,8 +516,11 @@ export default function CadastroComplementoForm({
 
       <div className="relative mx-auto max-w-210">
         <div className="flex items-center justify-between sm:justify-center">
-          <div className="sm:absolute sm:left-0 sm:top-1/2 sm:-translate-y-1/2">
-            <BotaoVoltar href="/cadastro" ariaLabel="Voltar para a primeira etapa" />
+          <div className="sm:absolute sm:left-0 sm:top-0">
+            <BotaoVoltar
+              href="/cadastro"
+              ariaLabel="Voltar para a primeira etapa"
+            />
           </div>
 
           <div className="flex items-center justify-center">
@@ -514,7 +535,7 @@ export default function CadastroComplementoForm({
         </h1>
       </div>
 
-      <div className="mx-auto mt-8 sm:mt-9 max-w-160">
+      <div className="mx-auto mt-5 sm:mt-6 max-w-160">
         {sucesso ? (
           <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-center animate-fade-in">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600">
@@ -536,8 +557,8 @@ export default function CadastroComplementoForm({
               Cadastro finalizado com sucesso!
             </h3>
             <p className="mt-1 text-sm text-green-700">
-              Parabéns{dadosEtapa1.nome ? `, ${dadosEtapa1.nome}` : ""}! Seus dados foram
-              cadastrados e você já pode escolher o seu plano.
+              Parabéns{dadosEtapa1.nome ? `, ${dadosEtapa1.nome}` : ""}! Seus
+              dados foram cadastrados e você já pode escolher o seu plano.
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
               <Link
