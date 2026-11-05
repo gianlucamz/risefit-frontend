@@ -5,12 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export const MOCK_USUARIO = {
-  nome: "Matheus Henrique Silva",
-  email: "matheus.silva@email.com",
-  celular: "(11) 98765-4321",
-};
-
 export function formatarTelefone(valor: string): string {
   const digitos = valor.replace(/\D/g, "").slice(0, 11);
   if (digitos.length === 0) return "";
@@ -23,6 +17,7 @@ export function formatarTelefone(valor: string): string {
 export function validarEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
+
 interface BotaoVoltarProps {
   onClick?: () => void;
   ariaLabel?: string;
@@ -199,14 +194,12 @@ export interface CadastroFormProps {
     celular: string;
   }) => void;
   titulo?: string;
-  mostrarBotaoMock?: boolean;
 }
 
 export default function CadastroForm({
   dadosIniciais,
   aoCompletar,
   titulo = "Sua jornada RiseFit começa agora!",
-  mostrarBotaoMock = false,
 }: CadastroFormProps) {
   const router = useRouter();
 
@@ -216,9 +209,7 @@ export default function CadastroForm({
       try {
         const salvo = sessionStorage.getItem("risefit_cadastro_step1");
         if (salvo) return JSON.parse(salvo).nome || "";
-      } catch {
-        // Ignora erro
-      }
+      } catch {}
     }
     return "";
   });
@@ -229,9 +220,7 @@ export default function CadastroForm({
       try {
         const salvo = sessionStorage.getItem("risefit_cadastro_step1");
         if (salvo) return JSON.parse(salvo).email || "";
-      } catch {
-        // Ignora erro
-      }
+      } catch {}
     }
     return "";
   });
@@ -242,9 +231,7 @@ export default function CadastroForm({
       try {
         const salvo = sessionStorage.getItem("risefit_cadastro_step1");
         if (salvo) return formatarTelefone(JSON.parse(salvo).celular || "");
-      } catch {
-        // Ignora erro
-      }
+      } catch {}
     }
     return "";
   });
@@ -252,20 +239,6 @@ export default function CadastroForm({
   const [erros, setErros] = useState<Record<string, string>>({});
   const [carregando, setCarregando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
-
-  const preencherComMock = () => {
-    setNome(MOCK_USUARIO.nome);
-    setEmail(MOCK_USUARIO.email);
-    setCelular(MOCK_USUARIO.celular);
-    setErros({});
-  };
-
-  const limparCampos = () => {
-    setNome("");
-    setEmail("");
-    setCelular("");
-    setErros({});
-  };
 
   const validar = (): boolean => {
     const novosErros: Record<string, string> = {};
@@ -301,8 +274,6 @@ export default function CadastroForm({
     setCarregando(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
       const payload = {
         nome: nome.trim(),
         email: email.trim().toLowerCase(),
@@ -310,10 +281,11 @@ export default function CadastroForm({
       };
 
       try {
-        sessionStorage.setItem("risefit_cadastro_step1", JSON.stringify(payload));
-      } catch {
-        // Ignora erro de sessionStorage
-      }
+        sessionStorage.setItem(
+          "risefit_cadastro_step1",
+          JSON.stringify(payload),
+        );
+      } catch {}
 
       if (aoCompletar) {
         aoCompletar(payload);
@@ -328,25 +300,6 @@ export default function CadastroForm({
 
   return (
     <div className="w-full">
-      {mostrarBotaoMock && (
-        <div className="mb-4 flex flex-wrap items-center justify-end gap-2 text-xs">
-          <button
-            type="button"
-            onClick={preencherComMock}
-            className="rounded border border-purple-200 bg-purple-50 px-2.5 py-1 font-medium text-brand hover:bg-purple-100 transition-colors cursor-pointer"
-          >
-            Preencher Mock
-          </button>
-          <button
-            type="button"
-            onClick={limparCampos}
-            className="rounded border border-gray-200 bg-gray-50 px-2.5 py-1 font-medium text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
-          >
-            Limpar
-          </button>
-        </div>
-      )}
-
       <div className="relative mx-auto max-w-210">
         <div className="flex items-center justify-between sm:justify-center">
           <div className="sm:absolute sm:left-0 sm:top-0">
@@ -463,7 +416,7 @@ export default function CadastroForm({
               <button
                 type="submit"
                 disabled={carregando}
-                className="w-full rounded-full bg-brand py-3.5 sm:py-4 px-6 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:bg-brand active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
+                className="w-full rounded-full bg-brand py-3.5 sm:py-4 px-6 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#6d28d9] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
               >
                 {carregando ? (
                   <span className="flex items-center justify-center gap-2">

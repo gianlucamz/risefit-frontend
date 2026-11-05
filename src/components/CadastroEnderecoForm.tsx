@@ -9,18 +9,7 @@ import {
   CampoSelect,
 } from "@/components/CadastroComplementoForm";
 import PaymentCardModal, { DadosCartao } from "@/components/PaymentCardModal";
-
-export const MOCK_ENDERECO = {
-  cep: "12090-010",
-  estado: "SP",
-  cidade: "Taubaté",
-  bairro: "Centro",
-  rua: "Rua Quatro de Março",
-  numero: "243",
-  complemento: "Sala 12",
-  formaPagamento: "credito" as const,
-  aceitouTermos: true,
-};
+import { processarCheckoutAPI } from "@/services/api";
 
 const ESTADOS_BR = [
   { valor: "AC", rotulo: "Acre" },
@@ -252,13 +241,7 @@ function CheckboxTermos({ marcado, aoMudar, erro }: CheckboxTermosProps) {
   );
 }
 
-export interface CadastroEnderecoFormProps {
-  mostrarBotaoMock?: boolean;
-}
-
-export default function CadastroEnderecoForm({
-  mostrarBotaoMock = false,
-}: CadastroEnderecoFormProps) {
+export default function CadastroEnderecoForm() {
   const [cep, setCep] = useState("");
   const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
@@ -296,32 +279,6 @@ export default function CadastroEnderecoForm({
     setEstado(novoEstado);
     setCidade("");
     if (erros.estado) setErros((prev) => ({ ...prev, estado: "" }));
-  };
-
-  const preencherComMock = () => {
-    setCep(MOCK_ENDERECO.cep);
-    setEstado(MOCK_ENDERECO.estado);
-    setCidade(MOCK_ENDERECO.cidade);
-    setBairro(MOCK_ENDERECO.bairro);
-    setRua(MOCK_ENDERECO.rua);
-    setNumero(MOCK_ENDERECO.numero);
-    setComplemento(MOCK_ENDERECO.complemento);
-    setFormaPagamento(MOCK_ENDERECO.formaPagamento);
-    setAceitouTermos(MOCK_ENDERECO.aceitouTermos);
-    setErros({});
-  };
-
-  const limparCampos = () => {
-    setCep("");
-    setEstado("");
-    setCidade("");
-    setBairro("");
-    setRua("");
-    setNumero("");
-    setComplemento("");
-    setFormaPagamento("");
-    setAceitouTermos(false);
-    setErros({});
   };
 
   const validar = (): boolean => {
@@ -374,35 +331,54 @@ export default function CadastroEnderecoForm({
   };
 
   const handleConfirmarModal = async (dadosCartao: DadosCartao) => {
-    // <-- Tipado corretamente aqui
     setModalAberto(false);
     setCarregando(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const payloadFinal = {
-        ...dadosAnteriores,
-        cep: cep.trim(),
-        estado,
-        cidade,
-        bairro: bairro.trim(),
-        rua: rua.trim(),
-        numero: numero.trim(),
-        complemento: complemento.trim(),
-        formaPagamento,
-        dadosCartao,
+      const pagamentoTokenizado = {
+        token: `tok_mock_${Date.now()}`,
+        bandeira: "VISA",
+        ultimosDigitos: dadosCartao.numeroCartao.replace(/\s/g, "").slice(-4),
       };
 
+      const payloadFinal = {
+        usuario: {
+          nome: dadosAnteriores.nome || "",
+          email: dadosAnteriores.email || "",
+          senha: dadosAnteriores.senha || "RiseFit@123", // Senha temporária caso não esteja na etapa 1
+          dataNascimento: dadosAnteriores.dataNascimento
+            ? dadosAnteriores.dataNascimento.split("/").reverse().join("-")
+            : "2000-01-01",
+          telefone: dadosAnteriores.celular?.replace(/\D/g, "") || "",
+          cpf: dadosAnteriores.cpf?.replace(/\D/g, "") || "",
+          sexo: dadosAnteriores.sexo || "Não informado",
+        },
+        endereco: {
+          cep: cep.replace(/\D/g, ""),
+          estado,
+          cidade,
+          bairro: bairro.trim(),
+          rua: rua.trim(),
+          numero: numero.trim(),
+          complemento: complemento.trim() || undefined,
+        },
+        formaPagamento: formaPagamento as "credito" | "debito",
+        pagamento: pagamentoTokenizado,
+      };
+
+      await processarCheckoutAPI(payloadFinal);
+
       try {
-        sessionStorage.setItem(
-          "risefit_cadastro_final",
-          JSON.stringify(payloadFinal),
-        );
+        sessionStorage.removeItem("risefit_cadastro_step1");
+        sessionStorage.removeItem("risefit_cadastro_completo");
+        sessionStorage.removeItem("risefit_cadastro_final");
       } catch {}
-      console.log("Cadastro e pagamento finalizados:", payloadFinal);
 
       setSucesso(true);
+    } catch (error: unknown) {
+      const mensagem =
+        error instanceof Error ? error.message : "Erro ao finalizar cadastro.";
+      alert(mensagem);
     } finally {
       setCarregando(false);
     }
@@ -410,25 +386,6 @@ export default function CadastroEnderecoForm({
 
   return (
     <div className="w-full">
-      {mostrarBotaoMock && (
-        <div className="mb-4 flex flex-wrap items-center justify-end gap-2 text-xs">
-          <button
-            type="button"
-            onClick={preencherComMock}
-            className="rounded border border-purple-200 bg-purple-50 px-2.5 py-1 font-medium text-brand hover:bg-purple-100 transition-colors cursor-pointer"
-          >
-            Preencher Mock
-          </button>
-          <button
-            type="button"
-            onClick={limparCampos}
-            className="rounded border border-gray-200 bg-gray-50 px-2.5 py-1 font-medium text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
-          >
-            Limpar
-          </button>
-        </div>
-      )}
-
       <div className="relative mx-auto max-w-210">
         <div className="flex items-center justify-between sm:justify-center">
           <div className="sm:absolute sm:left-0 sm:top-0">

@@ -5,12 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export const MOCK_COMPLEMENTO = {
-  cpf: "529.982.247-25",
-  sexo: "Masculino",
-  dataNascimento: "15/08/1998",
-};
-
 export function formatarCPF(valor: string): string {
   const d = valor.replace(/\D/g, "").slice(0, 11);
   if (d.length <= 3) return d;
@@ -295,7 +289,6 @@ export function CampoSelect({
           ))}
         </select>
 
-        {/* Ícone de Chevron Down */}
         <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-700">
           <svg
             className="h-4 w-4"
@@ -371,13 +364,11 @@ export interface CadastroComplementoFormProps {
     dataNascimento?: string;
   };
   aoCompletar?: (dadosCompletos: DadosCadastroFinal) => void;
-  mostrarBotaoMock?: boolean;
 }
 
 export default function CadastroComplementoForm({
   dadosIniciais,
   aoCompletar,
-  mostrarBotaoMock = false,
 }: CadastroComplementoFormProps) {
   const router = useRouter();
 
@@ -409,27 +400,12 @@ export default function CadastroComplementoForm({
   const [carregando, setCarregando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
 
-  // Opções para o campo Sexo
   const opcoesSexo: OpcaoSelect[] = [
     { valor: "Feminino", rotulo: "Feminino" },
     { valor: "Masculino", rotulo: "Masculino" },
     { valor: "Outro", rotulo: "Outro" },
     { valor: "Prefiro não informar", rotulo: "Prefiro não informar" },
   ];
-
-  const preencherComMock = () => {
-    setCpf(MOCK_COMPLEMENTO.cpf);
-    setSexo(MOCK_COMPLEMENTO.sexo);
-    setDataNascimento(MOCK_COMPLEMENTO.dataNascimento);
-    setErros({});
-  };
-
-  const limparCampos = () => {
-    setCpf("");
-    setSexo("");
-    setDataNascimento("");
-    setErros({});
-  };
 
   const validar = (): boolean => {
     const novosErros: Record<string, string> = {};
@@ -466,8 +442,6 @@ export default function CadastroComplementoForm({
     setCarregando(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 900));
-
       const payloadFinal = {
         ...dadosEtapa1,
         cpf: cpf.trim(),
@@ -480,7 +454,9 @@ export default function CadastroComplementoForm({
           "risefit_cadastro_completo",
           JSON.stringify(payloadFinal),
         );
-      } catch {}
+      } catch {
+        // Ignora erro de sessionStorage
+      }
 
       if (aoCompletar) {
         aoCompletar(payloadFinal);
@@ -495,25 +471,6 @@ export default function CadastroComplementoForm({
 
   return (
     <div className="w-full">
-      {mostrarBotaoMock && (
-        <div className="mb-4 flex flex-wrap items-center justify-end gap-2 text-xs">
-          <button
-            type="button"
-            onClick={preencherComMock}
-            className="rounded border border-purple-200 bg-purple-50 px-2.5 py-1 font-medium text-brand hover:bg-purple-100 transition-colors cursor-pointer"
-          >
-            Preencher Mock
-          </button>
-          <button
-            type="button"
-            onClick={limparCampos}
-            className="rounded border border-gray-200 bg-gray-50 px-2.5 py-1 font-medium text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
-          >
-            Limpar
-          </button>
-        </div>
-      )}
-
       <div className="relative mx-auto max-w-210">
         <div className="flex items-center justify-between sm:justify-center">
           <div className="sm:absolute sm:left-0 sm:top-0">
