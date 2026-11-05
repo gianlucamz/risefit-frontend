@@ -17,7 +17,7 @@ const colunas = [
     titulo: "ATENDIMENTO",
     links: [
       { texto: "Central de ajuda", href: "#" },
-      { texto: "Contato", href: "#" },
+      { texto: "Contato", href: "/contato" },
       { texto: "Trabalhe conosco", href: "#" },
       { texto: "Perguntas frequentes", href: "#" },
     ],
