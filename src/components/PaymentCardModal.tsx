@@ -6,17 +6,6 @@ import {
   CampoSelect,
 } from "@/components/CadastroComplementoForm";
 
-export const MOCK_DADOS_CARTAO = {
-  nomeCartao: "GIANLUCA M ZOCARATO",
-  banco: "nubank",
-  numeroCartao: "4532 1123 9876 5432",
-  validade: "11/28",
-  cvv: "888",
-  nomeTitular: "Gianluca Moreno Zocarato",
-  tipoDocumento: "CPF",
-  documento: "456.789.012-34",
-};
-
 export function formatarNumeroCartao(valor: string): string {
   const v = valor.replace(/\D/g, "").slice(0, 16);
   return v.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
@@ -102,7 +91,6 @@ export interface PaymentCardModalProps {
   tipoCartao: "credito" | "debito";
   aoFechar: () => void;
   aoConfirmar: (dadosCartao: DadosCartao) => void;
-  mostrarBotaoMock?: boolean;
 }
 
 export default function PaymentCardModal({
@@ -110,7 +98,6 @@ export default function PaymentCardModal({
   tipoCartao,
   aoFechar,
   aoConfirmar,
-  mostrarBotaoMock = true,
 }: PaymentCardModalProps) {
   const [nomeCartao, setNomeCartao] = useState("");
   const [banco, setBanco] = useState("");
@@ -129,30 +116,6 @@ export default function PaymentCardModal({
 
   const placeholderDocumento =
     tipoDocumento === "CPF" ? "000.000.000-00" : "00.000.000/0001-00";
-
-  const preencherComMock = () => {
-    setNomeCartao(MOCK_DADOS_CARTAO.nomeCartao);
-    setBanco(MOCK_DADOS_CARTAO.banco);
-    setNumeroCartao(MOCK_DADOS_CARTAO.numeroCartao);
-    setValidade(MOCK_DADOS_CARTAO.validade);
-    setCvv(MOCK_DADOS_CARTAO.cvv);
-    setNomeTitular(MOCK_DADOS_CARTAO.nomeTitular);
-    setTipoDocumento(MOCK_DADOS_CARTAO.tipoDocumento);
-    setDocumento(MOCK_DADOS_CARTAO.documento);
-    setErros({});
-  };
-
-  const limparCampos = () => {
-    setNomeCartao("");
-    setBanco("");
-    setNumeroCartao("");
-    setValidade("");
-    setCvv("");
-    setNomeTitular("");
-    setTipoDocumento("CPF");
-    setDocumento("");
-    setErros({});
-  };
 
   const validar = (): boolean => {
     const nErros: Record<string, string> = {};
@@ -195,25 +158,6 @@ export default function PaymentCardModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
       <div className="w-full max-w-xl rounded-2xl bg-white p-6 sm:p-8 shadow-2xl transition-all duration-200">
-        {mostrarBotaoMock && (
-          <div className="mb-3 flex items-center justify-end gap-2 text-xs">
-            <button
-              type="button"
-              onClick={preencherComMock}
-              className="rounded border border-purple-200 bg-purple-50 px-2.5 py-1 font-medium text-brand hover:bg-purple-100 transition-colors cursor-pointer"
-            >
-              Preencher Mock
-            </button>
-            <button
-              type="button"
-              onClick={limparCampos}
-              className="rounded border border-gray-200 bg-gray-50 px-2.5 py-1 font-medium text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
-            >
-              Limpar
-            </button>
-          </div>
-        )}
-
         <div className="flex items-center justify-between pb-4 border-b border-gray-100">
           <div>
             <h2 className="text-xl font-bold text-gray-900">{tituloModal}</h2>
@@ -245,7 +189,6 @@ export default function PaymentCardModal({
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-6">
-          {/* Seção Informações do Cartão */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-gray-900 mb-3">
               Informações do Cartão
@@ -328,7 +271,6 @@ export default function PaymentCardModal({
             </div>
           </div>
 
-          {/* Seção Informações de Cobrança */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-gray-900 mb-3">
               Informações de Cobrança
