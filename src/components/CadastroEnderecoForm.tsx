@@ -8,6 +8,7 @@ import {
   CampoFormulario,
   CampoSelect,
 } from "@/components/CadastroComplementoForm";
+import PaymentCardModal, { DadosCartao } from "@/components/PaymentCardModal";
 
 export const MOCK_ENDERECO = {
   cep: "12090-010",
@@ -273,6 +274,8 @@ export default function CadastroEnderecoForm({
   const [erros, setErros] = useState<Record<string, string>>({});
   const [carregando, setCarregando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
+  const [modalAberto, setModalAberto] = useState(false);
+
   const [dadosAnteriores] = useState<Record<string, string>>(() => {
     if (typeof window === "undefined") return {};
     try {
@@ -364,11 +367,15 @@ export default function CadastroEnderecoForm({
     return Object.keys(novosErros).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmitForm = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validar()) return;
+    setModalAberto(true);
+  };
 
+  const handleConfirmarModal = async (dadosCartao: DadosCartao) => {
+    // <-- Tipado corretamente aqui
+    setModalAberto(false);
     setCarregando(true);
 
     try {
@@ -384,6 +391,7 @@ export default function CadastroEnderecoForm({
         numero: numero.trim(),
         complemento: complemento.trim(),
         formaPagamento,
+        dadosCartao,
       };
 
       try {
@@ -392,7 +400,7 @@ export default function CadastroEnderecoForm({
           JSON.stringify(payloadFinal),
         );
       } catch {}
-      console.log("Cadastro completo:", payloadFinal);
+      console.log("Cadastro e pagamento finalizados:", payloadFinal);
 
       setSucesso(true);
     } finally {
@@ -465,8 +473,8 @@ export default function CadastroEnderecoForm({
             </h3>
             <p className="mt-1 text-sm text-green-700">
               Parabéns{dadosAnteriores.nome ? `, ${dadosAnteriores.nome}` : ""}!
-              Seu cadastro na RiseFit foi concluído. Seu plano será ativado em
-              instantes.
+              Seu cadastro e pagamento foram efetuados. Seu plano será ativado
+              em instantes.
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
               <Link
@@ -484,7 +492,7 @@ export default function CadastroEnderecoForm({
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} noValidate className="space-y-8">
+          <form onSubmit={handleSubmitForm} noValidate className="space-y-8">
             <section>
               <h2 className="text-base sm:text-lg font-bold text-gray-900">
                 Qual seu endereço de cobrança?
@@ -708,6 +716,15 @@ export default function CadastroEnderecoForm({
               </button>
             </div>
           </form>
+        )}
+
+        {formaPagamento && (
+          <PaymentCardModal
+            aberto={modalAberto}
+            tipoCartao={formaPagamento}
+            aoFechar={() => setModalAberto(false)}
+            aoConfirmar={handleConfirmarModal}
+          />
         )}
       </div>
     </div>
