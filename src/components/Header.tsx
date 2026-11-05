@@ -3,12 +3,54 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Header() {
   const [menuAberto, setMenuAberto] = useState(false);
+  const [primeiroNome, setPrimeiroNome] = useState<string | null>(null);
   const naPaginaProfissionais = usePathname() === "/profissionais";
   const classeProfissionais = naPaginaProfissionais ? "text-brand" : "";
+
+  useEffect(() => {
+    function carregarUsuario() {
+      if (typeof window === "undefined") return;
+
+      try {
+        const usuarioSalvo = localStorage.getItem("usuario");
+        if (usuarioSalvo) {
+          const dados = JSON.parse(usuarioSalvo);
+          const nomeCompleto = dados.nome || dados.nomeCompleto || "";
+          if (nomeCompleto) {
+            setPrimeiroNome(nomeCompleto.trim().split(" ")[0]);
+            return;
+          }
+        }
+
+        const step1Salvo = sessionStorage.getItem("risefit_cadastro_step1");
+        if (step1Salvo) {
+          const dadosStep1 = JSON.parse(step1Salvo);
+          if (dadosStep1.nome) {
+            setPrimeiroNome(dadosStep1.nome.trim().split(" ")[0]);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao ler dados de sessão no Header:", e);
+      }
+
+      setPrimeiroNome(null);
+    }
+
+    carregarUsuario();
+
+    window.addEventListener("usuario_logado", carregarUsuario);
+    window.addEventListener("storage", carregarUsuario);
+
+    return () => {
+      window.removeEventListener("usuario_logado", carregarUsuario);
+      window.removeEventListener("storage", carregarUsuario);
+    };
+  }, []);
 
   function fecharMenu() {
     setMenuAberto(false);
@@ -58,12 +100,22 @@ export default function Header() {
               <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
             </svg>
           </Link>
-          <Link
-            href="/cadastro"
-            className="rounded-lg bg-brand px-5 py-2 text-white"
-          >
-            Inscreva-se
-          </Link>
+
+          {primeiroNome ? (
+            <Link
+              href="/area-aluno"
+              className="font-medium text-white hover:text-brand transition-colors"
+            >
+              Olá, {primeiroNome}
+            </Link>
+          ) : (
+            <Link
+              href="/cadastro"
+              className="rounded-lg bg-brand px-5 py-2 text-white hover:bg-[#6d28d9] transition-colors"
+            >
+              Inscreva-se
+            </Link>
+          )}
         </div>
 
         <button
@@ -90,7 +142,7 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Menu do celular (aparece quando menuAberto é true) */}
+      {/* Menu Mobile */}
       {menuAberto && (
         <nav className="flex flex-col gap-5 border-t border-white/10 px-6 py-6 text-lg lg:hidden">
           <Link href="/" onClick={fecharMenu}>
@@ -112,14 +164,27 @@ export default function Header() {
           <Link href="/sobre-nos" onClick={fecharMenu}>
             Sobre nós
           </Link>
-          <Link href="/area-do-aluno">Área do Aluno</Link>
-          <Link
-            href="/#planos"
-            onClick={fecharMenu}
-            className="rounded-xl bg-brand px-6 py-3 text-center font-semibold"
-          >
-            Inscreva-se
+          <Link href="/area-aluno" onClick={fecharMenu}>
+            Área do Aluno
           </Link>
+
+          {primeiroNome ? (
+            <Link
+              href="/area-aluno"
+              onClick={fecharMenu}
+              className="font-medium text-white hover:text-brand transition-colors text-center py-2"
+            >
+              Olá, {primeiroNome}
+            </Link>
+          ) : (
+            <Link
+              href="/#planos"
+              onClick={fecharMenu}
+              className="rounded-xl bg-brand px-6 py-3 text-center font-semibold"
+            >
+              Inscreva-se
+            </Link>
+          )}
         </nav>
       )}
     </header>
