@@ -10,6 +10,7 @@ import {
 } from "@/components/CadastroComplementoForm";
 import PaymentCardModal, { DadosCartao } from "@/components/PaymentCardModal";
 import { processarCheckoutAPI } from "@/services/api";
+import { useRouter } from "next/navigation";
 
 const ESTADOS_BR = [
   { valor: "AC", rotulo: "Acre" },
@@ -242,6 +243,8 @@ function CheckboxTermos({ marcado, aoMudar, erro }: CheckboxTermosProps) {
 }
 
 export default function CadastroEnderecoForm() {
+  const router = useRouter();
+
   const [cep, setCep] = useState("");
   const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
@@ -345,7 +348,7 @@ export default function CadastroEnderecoForm() {
         usuario: {
           nome: dadosAnteriores.nome || "",
           email: dadosAnteriores.email || "",
-          senha: dadosAnteriores.senha || "RiseFit@123", // Senha temporária caso não esteja na etapa 1
+          senha: dadosAnteriores.senha || "RiseFit@123",
           dataNascimento: dadosAnteriores.dataNascimento
             ? dadosAnteriores.dataNascimento.split("/").reverse().join("-")
             : "2000-01-01",
@@ -368,6 +371,14 @@ export default function CadastroEnderecoForm() {
 
       await processarCheckoutAPI(payloadFinal);
 
+      localStorage.setItem(
+        "usuario",
+        JSON.stringify({
+          nome: dadosAnteriores.nome || "",
+          email: dadosAnteriores.email || "",
+        }),
+      );
+
       try {
         sessionStorage.removeItem("risefit_cadastro_step1");
         sessionStorage.removeItem("risefit_cadastro_completo");
@@ -375,6 +386,9 @@ export default function CadastroEnderecoForm() {
       } catch {}
 
       setSucesso(true);
+      setTimeout(() => {
+        router.push("/area-aluno");
+      }, 1500);
     } catch (error: unknown) {
       const mensagem =
         error instanceof Error ? error.message : "Erro ao finalizar cadastro.";
