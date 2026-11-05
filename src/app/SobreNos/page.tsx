@@ -20,15 +20,14 @@ const pilares = [
 export default function SobreNos() {
   return (
     <section id="sobre-nos" className="scroll-mt-24 pb-16 lg:pb-24">
-      <div className="mx-auto max-w-[1440px] px-6 lg:px-14">
+      <div className="mx-auto max-w-360 px-6 lg:px-14">
         {/* Título da seção */}
         <p className="text-center text-xs tracking-widest text-gray-600">
           SOBRE NÓS
         </p>
         <h2 className="mt-4 max-w-xl border-b border-gray-400 pb-4 text-2xl font-bold lg:text-3xl">
           Mais do que um espaço de treino.
-          <br />
-          O suporte que você precisa para evoluir.
+          <br />O suporte que você precisa para evoluir.
         </h2>
 
         {/* Texto + imagem lado a lado */}
