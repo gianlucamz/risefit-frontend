@@ -33,9 +33,9 @@ const colunas = [
   {
     titulo: "POLÍTICAS",
     links: [
-      { texto: "Política de privacidade", href: "#" },
-      { texto: "Termos de uso", href: "#" },
-      { texto: "Política de cookies", href: "#" },
+      { texto: "Política de privacidade", href: "/politicas/privacidade" },
+      { texto: "Termos de uso", href: "/politicas/termos-de-uso" },
+      { texto: "Política de cookies", href: "/politicas/cookies" },
     ],
   },
 ];
