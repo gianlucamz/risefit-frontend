@@ -159,7 +159,7 @@ export function AvisoPrivacidade() {
         nos permite lhe prestar nossos serviços. Para mais informações, acesse
         nossa{" "}
         <Link
-          href="/politica-de-privacidade"
+          href="/politicas/privacidade"
           className="text-[#6b7280] hover:text-brand underline underline-offset-2 transition-colors"
         >
           Política de Privacidade
@@ -401,7 +401,7 @@ export default function CadastroForm({
 
             <div className="pt-1 text-center">
               <Link
-                href="/area-aluno"
+                href="/login"
                 className="text-sm font-medium text-[#6d28d9] hover:text-[#5b21b6] transition-colors hover:underline"
               >
                 Já fui aluno(a) RiseFit →
