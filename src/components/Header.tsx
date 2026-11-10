@@ -13,7 +13,8 @@ export default function Header() {
       if (typeof window === "undefined") return;
 
       try {
-        const usuarioSalvo = localStorage.getItem("usuario");
+        const usuarioSalvo =
+          localStorage.getItem("usuario") ?? sessionStorage.getItem("usuario");
         if (usuarioSalvo) {
           const dados = JSON.parse(usuarioSalvo);
           const nomeCompleto = dados.nome || dados.nomeCompleto || "";
@@ -78,7 +79,10 @@ export default function Header() {
         </nav>
 
         <div className="hidden items-center gap-8 text-lg lg:flex">
-          <Link href="/area-aluno" className="flex items-center gap-2">
+          <Link
+            href={primeiroNome ? "/area-aluno" : "/login"}
+            className="flex items-center gap-2"
+          >
             Área do Aluno
             <svg
               width="20"
@@ -155,7 +159,10 @@ export default function Header() {
           <Link href="/#sobre-nos" onClick={fecharMenu}>
             Sobre nós
           </Link>
-          <Link href="/area-aluno" onClick={fecharMenu}>
+          <Link
+            href={primeiroNome ? "/area-aluno" : "/login"}
+            onClick={fecharMenu}
+          >
             Área do Aluno
           </Link>
 
