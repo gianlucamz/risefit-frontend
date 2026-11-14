@@ -9,9 +9,11 @@ export const metadata: Metadata = {
 
 export default function CadastroComplementoPage() {
   return (
-    <main className="min-h-[calc(100vh-100px)] bg-[#ececec] px-3 sm:px-6 lg:px-8 flex justify-center">
-      <div className="w-full max-w-260 rounded-sm sm:rounded-md bg-white px-4 py-8 sm:px-10 sm:py-12 lg:px-16 shadow-xs">
-        <CadastroComplementoForm mostrarBotaoMock={true} />
+    <main className="flex justify-center bg-[#ededed]">
+      <div className="w-full max-w-[1240px] bg-white px-4 pt-6 pb-12 sm:px-10 lg:min-h-[976px] lg:pt-[46px]">
+        <div className="mx-auto max-w-[920px]">
+          <CadastroComplementoForm />
+        </div>
       </div>
     </main>
   );

@@ -101,7 +101,12 @@ export default function LojaCatalogo() {
           <h2 className="text-sm font-bold">Configurações</h2>
           <ul className="mt-3 space-y-2">
             <li>
-              <Link href="/area-aluno" className={linkSidebar}>
+              <Link href="/carrinho" className={linkSidebar}>
+                Meu carrinho
+              </Link>
+            </li>
+            <li>
+              <Link href="/login" className={linkSidebar}>
                 Faça seu login
               </Link>
             </li>
@@ -111,7 +116,7 @@ export default function LojaCatalogo() {
               </Link>
             </li>
             <li>
-              <Link href="/area-aluno" className={linkSidebar}>
+              <Link href="/minha-conta" className={linkSidebar}>
                 Minha Conta
               </Link>
             </li>

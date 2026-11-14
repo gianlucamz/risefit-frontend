@@ -13,6 +13,8 @@ export type Produto = {
   // Caminho da imagem em /public (ex.: "/loja/coqueteleira.png").
   // Sem imagem, o card mostra um ícone no lugar.
   imagem?: string;
+  // Variação exibida no carrinho (ex.: "600 ml • Preta").
+  detalhe?: string;
 };
  
 export const categorias: { id: CategoriaId; rotulo: string }[] = [
@@ -30,12 +32,14 @@ export const produtos: Produto[] = [
     nome: "Coqueteleira 3 Whey Top Taste - 600Ml Preta - Body Action",
     preco: 21.07,
     categoria: "acessorios",
+    detalhe: "600 ml • Preta",
   },
   {
     id: 2,
     nome: "Camiseta Masculina Dry Fit Camisa Ultra Leve Manga Curta",
     preco: 29.9,
     categoria: "roupas",
+    detalhe: "Tamanho M • Preta",
   },
   {
     id: 3,

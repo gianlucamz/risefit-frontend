@@ -1,30 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
+import ListaExercicios from "@/components/ListaExercicios";
+import {
+  assinaturaDemo,
+  formatarMoeda,
+  planoPorId,
+  resumoSemana,
+  treinoDoDia,
+} from "@/data/aluno";
 
-// Página Área do Aluno: salve como src/app/area-do-aluno/page.tsx
+// Página Área do Aluno (src/app/area-aluno/page.tsx)
 // O header e o footer já vêm do layout do site, então aqui ficam só o hero e os cards.
 // O hero usa a imagem public/banneraluno.png (2172x724).
 
-const treinoDoDia = {
-  titulo: "Treino de Superior (Costas e Bíceps)",
-  exercicios: [
-    { nome: "Barra fixa", detalhe: "3 séries · 8 a 12 repetições" },
-    { nome: "Remada curvada", detalhe: "3 séries · 8 a 12 repetições" },
-    { nome: "Puxada alta", detalhe: "3 séries · 8 a 12 repetições" },
-    { nome: "Rosca direta", detalhe: "3 séries · 8 a 12 repetições" },
-    { nome: "Rosca alternada", detalhe: "3 séries · 8 a 12 repetições" },
-  ],
-};
-
-const resumo = {
-  concluidos: 0,
-  meta: 5,
-  tempo: "0h 00min",
-  calorias: "0 kcal",
-  peso: "Não informado",
-};
-
 export default function AreaDoAlunoPage() {
+  const planoAtual = planoPorId(assinaturaDemo.planoId);
+
   return (
     <main>
       {/* ============ HERO (banner) ============ */}
@@ -71,7 +62,7 @@ export default function AreaDoAlunoPage() {
             <header className="flex items-center justify-between">
               <h2 className="text-lg font-bold lg:text-xl">Meu treino de hoje</h2>
               <Link
-                href="/area-do-aluno/treinos"
+                href="/area-aluno/treinos"
                 className="inline-flex items-center gap-1 text-sm text-[#7c3aed] hover:underline"
               >
                 Ver todos
@@ -80,26 +71,18 @@ export default function AreaDoAlunoPage() {
             </header>
 
             <p className="mt-4 text-sm text-gray-800 lg:text-base">
-              {treinoDoDia.titulo}
+              {treinoDoDia.titulo} ({treinoDoDia.foco})
+            </p>
+            <p className="mt-2 text-xs text-gray-500">
+              {treinoDoDia.diaSemana}, {treinoDoDia.dataLonga}
             </p>
 
-            <ul className="mt-5 space-y-3">
-              {treinoDoDia.exercicios.map((exercicio, i) => (
-                <li
-                  key={exercicio.nome}
-                  className="flex items-center gap-4 rounded-lg border border-gray-300 px-4 py-3"
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-400 text-sm">
-                    {i + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold">{exercicio.nome}</p>
-                    <p className="text-xs text-gray-600">{exercicio.detalhe}</p>
-                  </div>
-                  <Chevron />
-                </li>
-              ))}
-            </ul>
+            <div className="mt-5">
+              <ListaExercicios
+                exercicios={treinoDoDia.exercicios}
+                hrefTreino={`/area-aluno/treinos/${treinoDoDia.id}`}
+              />
+            </div>
           </article>
 
           {/* Resumo da semana */}
@@ -107,7 +90,7 @@ export default function AreaDoAlunoPage() {
             <header className="flex items-center justify-between">
               <h2 className="text-lg font-bold lg:text-xl">Resumo da semana</h2>
               <Link
-                href="/area-do-aluno/resumo"
+                href="/area-aluno/historico"
                 className="inline-flex items-center gap-1 text-sm text-[#7c3aed] hover:underline"
               >
                 Ver detalhes
@@ -116,10 +99,10 @@ export default function AreaDoAlunoPage() {
             </header>
 
             <div className="mt-6 flex items-center gap-6">
-              <ProgressRing atual={resumo.concluidos} meta={resumo.meta} />
+              <ProgressRing atual={resumoSemana.concluidos} meta={resumoSemana.meta} />
               <div>
-                <p className="font-semibold">Treino</p>
-                <p className="text-sm text-gray-600">Treinos concluídos</p>
+                <p className="font-semibold">Treinos concluídos</p>
+                <p className="text-sm text-gray-600">{resumoSemana.periodo}</p>
               </div>
             </div>
 
@@ -127,21 +110,43 @@ export default function AreaDoAlunoPage() {
               <ResumoItem
                 icone={<ClockIcon />}
                 rotulo="Tempo de treino"
-                valor={resumo.tempo}
+                valor="0h 00min"
               />
               <ResumoItem
                 icone={<FlameIcon />}
                 rotulo="Calorias queimadas"
-                valor={resumo.calorias}
+                valor={resumoSemana.calorias}
               />
               <ResumoItem
                 icone={<ScaleIcon />}
                 rotulo="Peso atual"
-                valor={resumo.peso}
+                valor={resumoSemana.peso}
               />
             </ul>
           </article>
         </div>
+
+        {/* Meu plano */}
+        <article className="mx-auto mt-6 max-w-[1440px] rounded-2xl bg-white p-6 shadow-sm lg:p-8">
+          <h2 className="text-lg font-bold lg:text-xl">Meu plano</h2>
+          <dl className="mt-4 space-y-3 text-sm">
+            <div className="flex justify-between gap-4">
+              <dt className="text-gray-600">{planoAtual.nome}</dt>
+              <dd className="font-semibold">{formatarMoeda(planoAtual.preco)}/mês</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-gray-600">Situação</dt>
+              <dd className="font-semibold">{assinaturaDemo.situacao}</dd>
+            </div>
+          </dl>
+          <Link
+            href="/minha-conta"
+            className="mt-5 inline-flex items-center gap-1 text-sm text-[#7c3aed] hover:underline"
+          >
+            Gerenciar minha assinatura
+            <ArrowRight />
+          </Link>
+        </article>
       </section>
     </main>
   );
@@ -217,14 +222,6 @@ function ArrowRight() {
     <svg {...iconeBase} className="h-3.5 w-3.5">
       <path d="M4 12h16" />
       <path d="M14 6l6 6-6 6" />
-    </svg>
-  );
-}
-
-function Chevron() {
-  return (
-    <svg {...iconeBase} className="h-4 w-4 text-gray-700">
-      <path d="M9 6l6 6-6 6" />
     </svg>
   );
 }

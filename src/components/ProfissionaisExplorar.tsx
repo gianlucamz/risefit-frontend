@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import ProfissionalCard from "./ProfissionalCard";
+import { Botao, IconeBusca, PainelEstado } from "./PainelUI";
 
 // ---------- Tipos e dados de demonstração ----------
 export type ObjetivoId =
@@ -235,7 +236,25 @@ export default function ProfissionaisExplorar() {
               ))}
             </div>
           ) : (
-            <p className="mt-8 text-sm text-gray-500">Nenhum profissional encontrado.</p>
+            <div className="mx-auto mt-8 max-w-xl">
+              <PainelEstado
+                icone={<IconeBusca />}
+                titulo="Nenhum resultado encontrado"
+                descricao="Não encontramos profissionais para esta busca. Tente outro nome ou revise os filtros."
+              >
+                <Botao
+                  variante="secundario"
+                  larguraTotal
+                  onClick={() => {
+                    setBusca("");
+                    setEspecialidade("");
+                    setObjetivo(null);
+                  }}
+                >
+                  Limpar busca e filtros
+                </Botao>
+              </PainelEstado>
+            </div>
           )}
         </section>
       </div>
