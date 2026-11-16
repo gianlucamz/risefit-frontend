@@ -27,11 +27,11 @@ export default function NotFound() {
           </h1>
           <p className="mt-4 text-base leading-6 text-[#6b7280] lg:mt-[26px]">
             O endereço pode ter mudado ou não estar disponível. Volte para a
-            Home ou procure ajuda para continuar.
+            Página Inicial ou procure ajuda para continuar.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-4 lg:mt-[21px]">
             <Link href="/" className={`${botao} bg-brand text-white hover:bg-[#6d28d9]`}>
-              Voltar para Home
+              Voltar para Página Inicial
             </Link>
             <Link
               href="/contato#central-de-ajuda"

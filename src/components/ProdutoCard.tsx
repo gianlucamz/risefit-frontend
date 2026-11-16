@@ -20,11 +20,15 @@ export default function ProdutoCard({ produto }: { produto: Produto }) {
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl bg-white p-4 shadow-md">
-      <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-50">
+      <Link
+        href={`/loja/${produto.id}`}
+        aria-label={produto.nome}
+        className="relative block aspect-square w-full overflow-hidden rounded-xl bg-gray-50 transition-opacity hover:opacity-90"
+      >
         {mostrarImagem ? (
           <Image
             src={produto.imagem!}
-            alt={produto.nome}
+            alt=""
             fill
             sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
             className="object-contain p-3"
@@ -49,10 +53,12 @@ export default function ProdutoCard({ produto }: { produto: Produto }) {
             </svg>
           </div>
         )}
-      </div>
+      </Link>
 
       <h3 className="mt-4 line-clamp-3 min-h-[3.75em] text-xs font-bold leading-tight text-dark">
-        {produto.nome}
+        <Link href={`/loja/${produto.id}`} className="hover:text-brand">
+          {produto.nome}
+        </Link>
       </h3>
       <p className="mt-3 text-sm font-extrabold text-dark">
         {moeda.format(produto.preco)}

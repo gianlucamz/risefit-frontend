@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import {
   BotaoLink,
   Cartao,
@@ -24,10 +23,10 @@ export default function MinhaContaPage() {
     <main className="bg-[#f8f8f8] px-6 py-10 lg:py-14">
       <div className="mx-auto max-w-300">
         <p className="text-sm font-medium text-brand">Minha conta</p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight text-dark lg:text-[44px]">
+        <h1 className="mt-3 text-[28px] leading-[35px] font-bold tracking-tight text-dark lg:text-[44px] lg:leading-normal">
           Gerencie sua assinatura e informações
         </h1>
-        <p className="mt-3 text-sm text-gray-500 lg:text-base">
+        <p className="mt-3 text-[15px] leading-[23px] text-gray-500 lg:text-base lg:leading-normal">
           Acompanhe seu plano, dados pessoais e opções de suporte em um só lugar.
         </p>
 
@@ -141,13 +140,6 @@ export default function MinhaContaPage() {
           </div>
         </section>
 
-        <p className="mt-6 text-xs text-gray-500">
-          Dados demonstrativos. Para sair da conta, use o{" "}
-          <Link href="/login" className="text-brand hover:underline">
-            login
-          </Link>
-          .
-        </p>
       </div>
     </main>
   );

@@ -75,17 +75,17 @@ const perguntas = [
 
 // Estilos repetidos
 const cartao =
-  "scroll-mt-28 rounded-3xl border border-[#e4e6eb] bg-white px-5 py-8 sm:px-10 sm:py-10";
+  "scroll-mt-12 rounded-3xl border border-[#e4e6eb] bg-white px-5 py-6 sm:scroll-mt-28 sm:px-10 sm:py-10";
 const tituloCartao =
-  "text-[26px] leading-9 font-bold text-[#0a0c11] sm:text-[32px] sm:leading-10";
-const textoCartao = "mt-[11px] text-base leading-6 text-[#6b7280]";
+  "text-[22px] leading-[30px] font-bold text-[#0a0c11] sm:text-[32px] sm:leading-10";
+const textoCartao = "mt-[11px] text-sm leading-[22px] text-[#6b7280] sm:text-base sm:leading-6";
 
 export default function ContatoPage() {
   return (
     <main className="bg-white px-4 pt-10 pb-14 sm:px-6 lg:pt-[55px] lg:pb-[89px]">
       <div className="mx-auto w-full max-w-[1200px]">
         <p className="text-sm leading-5 font-semibold text-brand">Atendimento</p>
-        <h1 className="mt-3 text-[34px] leading-[42px] font-bold text-[#0a0c11] lg:mt-[19px] lg:text-[48px] lg:leading-14">
+        <h1 className="mt-3 text-[28px] leading-[35px] font-bold text-[#0a0c11] lg:mt-[19px] lg:text-[48px] lg:leading-14">
           Como podemos ajudar hoje?
         </h1>
 
@@ -134,9 +134,9 @@ export default function ContatoPage() {
               descricao:
                 "Sua mensagem foi registrada no exemplo. A equipe poderá usar o contato informado para dar continuidade ao atendimento.",
               observacao:
-                "Enquanto isso, consulte as perguntas frequentes ou retorne para a Home.",
+                "Enquanto isso, consulte as perguntas frequentes ou retorne para a Página Inicial.",
               primario: { href: "#faq", texto: "Ver perguntas frequentes" },
-              secundario: { href: "/", texto: "Voltar para Home" },
+              secundario: { href: "/", texto: "Voltar para Página Inicial" },
             }}
           >
             <div className="mt-6 rounded-[18px] bg-[#f8f6ff] px-5 pt-5 pb-[22px]">
@@ -176,7 +176,7 @@ export default function ContatoPage() {
             {centralDeAjuda.map((item) => (
               <article
                 key={item.titulo}
-                className="flex items-start gap-4 rounded-[18px] bg-[#f9f9fb] p-4 sm:items-center sm:py-5 sm:pr-6 sm:pl-5"
+                className="flex flex-col items-start gap-4 rounded-[18px] bg-[#f9f9fb] p-4 sm:flex-row sm:items-center sm:py-5 sm:pr-6 sm:pl-5"
               >
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand text-white">
                   {item.icone}
@@ -196,8 +196,8 @@ export default function ContatoPage() {
 
         {/* Perguntas frequentes */}
         <section id="faq" className={`mt-6 lg:mt-[46px] ${cartao}`}>
-          <h2 className={`text-center ${tituloCartao}`}>Perguntas frequentes</h2>
-          <p className={`text-center ${textoCartao}`}>
+          <h2 className={`sm:text-center ${tituloCartao}`}>Perguntas frequentes</h2>
+          <p className={`sm:text-center ${textoCartao}`}>
             Respostas rápidas para facilitar sua navegação antes de entrar em
             contato.
           </p>
@@ -450,7 +450,7 @@ function Campo({
 }
 
 function estiloCampo(erro?: string) {
-  return `h-[54px] w-full rounded-xl border bg-[#f9f9fb] px-4 text-[15px] text-[#0a0c11] placeholder:text-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-brand/30 ${
+  return `h-[54px] w-full rounded-xl border bg-white px-4 sm:bg-[#f9f9fb] text-[15px] text-[#0a0c11] placeholder:text-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-brand/30 ${
     erro ? "border-red-500" : "border-[#e4e6eb] focus:border-brand"
   }`;
 }

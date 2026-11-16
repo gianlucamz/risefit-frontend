@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import type { Profissional } from "@/data/profissionais";
 
@@ -67,11 +68,9 @@ export default function ProfissionalCard({ profissional }: { profissional: Profi
           ))}
         </ul>
 
-        {/* Ainda não existe página de perfil (a página do design está em branco):
-            o botão fica pronto para receber a rota depois, sem navegar para lugar nenhum. */}
-        <button
-          type="button"
-          className="relative mx-auto mt-4 flex h-[51px] w-full max-w-[300px] items-center justify-center rounded-[21px] border border-brand bg-white text-sm font-semibold text-brand lg:mt-0"
+        <Link
+          href={`/profissionais/${profissional.id}`}
+          className="relative mx-auto mt-4 flex h-[51px] w-full max-w-[300px] items-center justify-center rounded-[21px] border border-brand bg-white text-sm font-semibold text-brand transition-colors hover:bg-brand hover:text-white lg:mt-0"
         >
           <span className="-ml-[17px]">Ver perfil</span>
           <svg
@@ -88,7 +87,7 @@ export default function ProfissionalCard({ profissional }: { profissional: Profi
           >
             <path d="M2 9h16M11 2l7 7-7 7" />
           </svg>
-        </button>
+        </Link>
       </div>
     </article>
   );

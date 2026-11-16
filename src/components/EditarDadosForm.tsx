@@ -95,7 +95,7 @@ export default function EditarDadosForm() {
         </AlertaSucesso>
       )}
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col gap-5 sm:flex-row sm:flex-wrap sm:gap-3">
         <Botao type="submit">Salvar alterações</Botao>
         <BotaoLink href="/minha-conta" variante="secundario">
           Cancelar

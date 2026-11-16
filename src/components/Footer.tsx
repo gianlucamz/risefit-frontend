@@ -1,12 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
+import SomenteVisitante from "./SomenteVisitante";
 
 // Colunas de links do rodapé (mesma ordem do layout). Para mudar links, é só editar aqui.
 const colunas = [
   {
     titulo: "NAVEGAÇÃO",
     links: [
-      { texto: "Home", href: "/" },
+      { texto: "Página Inicial", href: "/" },
       { texto: "Planos", href: "/#planos" },
       { texto: "Profissionais", href: "/profissionais" },
       { texto: "Sobre nós", href: "/#sobre-nos" },
@@ -28,7 +29,7 @@ const colunas = [
       { texto: "Área do Aluno", href: "/area-aluno" },
       { texto: "Meus planos", href: "/minha-conta" },
       { texto: "Loja RiseFit", href: "/loja" },
-      { texto: "Inscreva-se", href: "/cadastro" },
+      { texto: "Inscreva-se", href: "/cadastro", apenasVisitante: true },
     ],
   },
   {
@@ -46,7 +47,7 @@ export default function Footer() {
   const ano = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#0a0c11] text-white">
+    <footer className="hidden bg-[#0a0c11] text-white lg:block">
       <div className="relative mx-auto max-w-360 px-6 pt-8 pb-8 lg:grid lg:min-h-44 lg:grid-cols-[423px_196px_189px_188px_1fr] lg:px-0 lg:pt-6 lg:pb-0 lg:pl-12.75">
         {/* Logo + endereço */}
         <div className="lg:pt-2.25">
@@ -76,13 +77,20 @@ export default function Footer() {
             <div key={coluna.titulo}>
               <h3 className="text-sm leading-5">{coluna.titulo}</h3>
               <ul className="mt-2.5 flex flex-col gap-3 text-[13px] leading-4 lg:gap-1.75 lg:text-[11px] lg:leading-3.5">
-                {coluna.links.map((link) => (
-                  <li key={link.texto}>
-                    <Link href={link.href} className="hover:text-brand">
-                      {link.texto}
-                    </Link>
-                  </li>
-                ))}
+                {coluna.links.map((link) => {
+                  const item = (
+                    <li key={link.texto}>
+                      <Link href={link.href} className="hover:text-brand">
+                        {link.texto}
+                      </Link>
+                    </li>
+                  );
+                  return "apenasVisitante" in link && link.apenasVisitante ? (
+                    <SomenteVisitante key={link.texto}>{item}</SomenteVisitante>
+                  ) : (
+                    item
+                  );
+                })}
               </ul>
             </div>
           ))}

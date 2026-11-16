@@ -17,7 +17,7 @@ export function AcessoLayout({
           href="/"
           className="text-xs font-medium text-brand hover:underline"
         >
-          ← Voltar para home
+          ← Voltar para Página Inicial
         </Link>
 
         <div

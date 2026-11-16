@@ -7,6 +7,8 @@ import { AlertaErro, BotaoAcesso, CampoSenha } from "./AcessoUI";
 import { CampoFormulario, LogoRiseFit, validarEmail } from "./CadastroForm";
 import { formatarCPF, validarCPF } from "./CadastroComplementoForm";
 import { loginAPI } from "@/services/api";
+import { perfilTeste, perfilTesteAtivo } from "@/data/perfilTeste";
+import { salvarSessao } from "@/lib/sessao";
 
 function formatarIdentificador(valor: string): string {
   if (/[a-zA-Z@]/.test(valor)) return valor;
@@ -54,6 +56,18 @@ export default function LoginForm() {
     setCarregando(true);
     try {
       const valor = identificador.trim();
+
+      // Perfil de teste (só em desenvolvimento): entra sem chamar a API.
+      if (
+        perfilTesteAtivo &&
+        valor.toLowerCase() === perfilTeste.email &&
+        senha === perfilTeste.senha
+      ) {
+        salvarSessao(perfilTeste.usuario, undefined, lembrar);
+        router.push("/area-aluno");
+        return;
+      }
+
       const resposta = await loginAPI({
         identificador: valor.includes("@") ? valor.toLowerCase() : valor,
         senha,

@@ -25,7 +25,7 @@ export function PaginaInterna({
   children: React.ReactNode;
 }) {
   return (
-    <main className="bg-[#f8f8f9] px-4 pt-8 pb-12 sm:px-6 lg:pt-12 lg:pb-16">
+    <main className="bg-[#f8f8f9] px-5 pt-7.5 pb-10 sm:px-6 lg:pt-12 lg:pb-16">
       <div
         className={`mx-auto ${largura === "larga" ? "max-w-300" : "max-w-230"}`}
       >
@@ -52,15 +52,15 @@ export function PaginaInterna({
           <h1
             className={`font-bold tracking-tight text-dark lg:tracking-normal ${
               centralizado
-                ? "text-[26px] leading-[34px] lg:text-[30px] lg:leading-[38px]"
-                : "text-[30px] leading-[38px] lg:text-[38px] lg:leading-[46px]"
+                ? "text-[28px] leading-[35px] lg:text-[30px] lg:leading-[38px]"
+                : "text-[28px] leading-[35px] lg:text-[38px] lg:leading-[46px]"
             }`}
           >
             {titulo}
           </h1>
           {subtitulo && (
             <p
-              className={`text-base leading-6 text-gray-500 ${centralizado ? "mt-[19px]" : "mt-3 lg:mt-4"}`}
+              className={`text-[15px] leading-[23px] text-gray-500 sm:text-base sm:leading-6 ${centralizado ? "mt-[19px]" : "mt-3 lg:mt-4"}`}
             >
               {subtitulo}
             </p>
@@ -94,15 +94,15 @@ export function Cartao({
   return (
     <section
       className={`rounded-[20px] border bg-white p-5 sm:p-7 ${
-        destaque ? "border-brand" : "border-gray-200"
+        destaque ? "border-brand" : "border-[#e4e6eb] sm:border-gray-200"
       } ${className}`}
     >
       {(titulo || acao) && (
         <header
-          className={`flex items-center justify-between gap-4 ${classeCabecalho}`}
+          className={`flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4 ${classeCabecalho}`}
         >
           {titulo && (
-            <h2 className="text-xl leading-[30px] font-bold text-dark sm:text-[22px]">
+            <h2 className="text-[22px] leading-[30px] font-bold text-dark">
               {titulo}
             </h2>
           )}
@@ -125,12 +125,12 @@ export function LinhaInfo({
   destaque?: boolean;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 py-[9px]">
-      <dt className="text-sm text-gray-500">{rotulo}</dt>
+    <div className="flex flex-col gap-1.5 py-2.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4 sm:py-[9px]">
+      <dt className="text-[13px] text-gray-500 sm:text-sm">{rotulo}</dt>
       <dd
-        className={`text-right font-bold ${
+        className={`font-bold sm:text-right ${
           destaque
-            ? "text-[22px] leading-6 text-brand"
+            ? "text-2xl leading-7 text-brand sm:text-[22px] sm:leading-6"
             : "text-[15px] leading-6 text-dark sm:text-base"
         }`}
       >
@@ -191,7 +191,7 @@ function classesBotao(variante: VarianteBotao, larguraTotal: boolean, grande = f
   return `inline-flex cursor-pointer items-center justify-center text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
     grande
       ? "min-h-12 rounded-xl px-6 py-2 text-[15px] leading-5 font-bold"
-      : "min-h-11 rounded-lg px-6 py-2.5 text-sm font-semibold"
+      : "min-h-12 rounded-lg px-6 py-2.5 text-sm font-semibold sm:min-h-11"
   } ${estiloBotao[variante]} ${larguraTotal ? "w-full" : ""}`;
 }
 

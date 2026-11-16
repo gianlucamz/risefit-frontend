@@ -36,10 +36,10 @@ export default function AlterarPlano() {
           const ehSelecionado = plano.id === selecionado && !ehAtual;
           return (
             <Cartao key={plano.id} titulo={plano.nome} destaque={ehSelecionado}>
-              <p className="text-2xl font-semibold text-brand">
+              <p className="text-[26px] font-semibold text-brand sm:text-2xl">
                 {formatarMoeda(plano.preco)}/mês
               </p>
-              <p className="mt-4 min-h-12 border-b border-gray-200 pb-4 text-sm text-gray-500">
+              <p className="mt-4 min-h-12 border-b border-gray-200 pb-4 text-[15px] text-gray-500 sm:text-sm">
                 {plano.descricao}
               </p>
               <p className="mt-4 text-xs text-gray-500">
@@ -112,7 +112,7 @@ export default function AlterarPlano() {
           </div>
         )}
 
-        <div className="mt-5 flex flex-wrap gap-3">
+        <div className="mt-5 flex flex-col gap-5 sm:flex-row sm:flex-wrap sm:gap-3">
           <Botao disabled={!ciente || !mudou} onClick={() => setEnviado(true)}>
             Solicitar alteração de plano
           </Botao>

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LinkAssinarPlano } from "./SomenteVisitante";
 import type { CSSProperties } from "react";
 
 // No design (1440px) cada cartão tem recuos um pouco diferentes; os valores abaixo
@@ -164,14 +164,14 @@ export default function Planos() {
               </ul>
 
               <div className="mt-8 px-6 lg:mt-auto lg:pl-[calc(var(--botao)-var(--b))] lg:pr-0">
-                <Link
-                  href={`/cadastro?plano=${plano.nome.toLowerCase()}`}
+                <LinkAssinarPlano
+                  plano={plano.nome.toLowerCase()}
                   className={`flex h-[51px] w-full items-center justify-center rounded-[22px] border-2 border-brand text-[17px] lg:w-[var(--botao-w)] ${
                     plano.destaque ? "bg-brand text-white" : "bg-white text-brand"
                   }`}
                 >
                   {plano.botao}
-                </Link>
+                </LinkAssinarPlano>
               </div>
             </div>
           ))}

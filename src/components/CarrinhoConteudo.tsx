@@ -89,8 +89,8 @@ export default function CarrinhoConteudo() {
                   <p className="mt-1 font-semibold text-dark">
                     {formatarMoeda(produto.preco)}
                   </p>
-                  <div className="mt-1 flex items-center gap-4 text-sm">
-                    <div className="flex items-center gap-1" role="group" aria-label={`Quantidade de ${produto.nome}`}>
+                  <div className="mt-1 flex items-center gap-4 text-sm max-sm:-ml-25 max-sm:mt-4 max-sm:justify-between">
+                    <div className="flex items-center gap-1 max-sm:rounded-md max-sm:border max-sm:border-gray-300 max-sm:px-1" role="group" aria-label={`Quantidade de ${produto.nome}`}>
                       <button
                         type="button"
                         onClick={() => alterarQuantidade(produto.id, quantidade - 1)}
@@ -131,7 +131,7 @@ export default function CarrinhoConteudo() {
             <label htmlFor="cep-entrega" className="mb-2 block text-sm font-semibold text-dark">
               CEP de entrega
             </label>
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-5 sm:flex-row sm:gap-3">
               <input
                 id="cep-entrega"
                 inputMode="numeric"
@@ -141,7 +141,7 @@ export default function CarrinhoConteudo() {
                 onChange={(e) => setCep(mascararCep(e.target.value))}
                 aria-invalid={Boolean(erroCep)}
                 aria-describedby="cep-entrega-dica"
-                className={`h-12 min-w-0 flex-1 rounded-md border bg-white px-4 text-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/20 ${
+                className={`h-12 w-full min-w-0 rounded-md border sm:flex-1 bg-white px-4 text-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/20 ${
                   erroCep ? "border-red-500" : "border-gray-300 focus:border-brand"
                 }`}
               />

@@ -2,53 +2,23 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { primeiroNome as obterPrimeiroNome, sair, useUsuarioLogado } from "@/lib/sessao";
 
 export default function Header() {
+  const router = useRouter();
   const [menuAberto, setMenuAberto] = useState(false);
-  const [primeiroNome, setPrimeiroNome] = useState<string | null>(null);
+  // Logado = existe "usuario" salvo pelo login. Sem login, mostra "Inscreva-se".
+  const usuario = useUsuarioLogado();
+  const logado = Boolean(usuario);
+  const primeiroNome = obterPrimeiroNome(usuario) ?? (logado ? "aluno" : null);
 
-  useEffect(() => {
-    function carregarUsuario() {
-      if (typeof window === "undefined") return;
-
-      try {
-        const usuarioSalvo =
-          localStorage.getItem("usuario") ?? sessionStorage.getItem("usuario");
-        if (usuarioSalvo) {
-          const dados = JSON.parse(usuarioSalvo);
-          const nomeCompleto = dados.nome || dados.nomeCompleto || "";
-          if (nomeCompleto) {
-            setPrimeiroNome(nomeCompleto.trim().split(" ")[0]);
-            return;
-          }
-        }
-
-        const step1Salvo = sessionStorage.getItem("risefit_cadastro_step1");
-        if (step1Salvo) {
-          const dadosStep1 = JSON.parse(step1Salvo);
-          if (dadosStep1.nome) {
-            setPrimeiroNome(dadosStep1.nome.trim().split(" ")[0]);
-            return;
-          }
-        }
-      } catch (e) {
-        console.error("Erro ao ler dados de sessão no Header:", e);
-      }
-
-      setPrimeiroNome(null);
-    }
-
-    carregarUsuario();
-
-    window.addEventListener("usuario_logado", carregarUsuario);
-    window.addEventListener("storage", carregarUsuario);
-
-    return () => {
-      window.removeEventListener("usuario_logado", carregarUsuario);
-      window.removeEventListener("storage", carregarUsuario);
-    };
-  }, []);
+  function sairDaConta() {
+    sair();
+    setMenuAberto(false);
+    router.push("/");
+  }
 
   function fecharMenu() {
     setMenuAberto(false);
@@ -56,7 +26,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-[#0b0c12] text-white">
-      <div className="relative mx-auto flex h-18 max-w-360 items-center justify-between px-4 lg:h-25.5 lg:pr-12.25 lg:pl-11.25">
+      <div className="relative mx-auto flex h-8.75 max-w-360 items-center justify-between pr-1 pl-2.5 lg:h-25.5 lg:pr-12.25 lg:pl-11.25">
         <Link href="/" className="shrink-0" onClick={fecharMenu} aria-label="RiseFit - página inicial">
           <Image
             src="/design/logo-risefit.png"
@@ -64,12 +34,12 @@ export default function Header() {
             width={229}
             height={76}
             priority
-            className="h-auto w-37 lg:w-57.25"
+            className="h-auto w-18.75 lg:w-57.25"
           />
         </Link>
 
-        <nav className="hidden gap-6 text-base lg:flex xl:absolute xl:left-[calc(50%-265px)] xl:gap-10.25 xl:text-lg">
-          <Link href="/" className="hover:text-brand">Home</Link>
+        <nav className="hidden gap-6 text-base lg:flex xl:absolute xl:left-[calc(50%-300px)] xl:gap-10.25 xl:text-lg">
+          <Link href="/" className="hover:text-brand">Página Inicial</Link>
           <Link href="/#planos" className="hover:text-brand">Planos</Link>
           <Link href="/profissionais" className="hover:text-brand">Profissionais</Link>
           <Link href="/loja" className="hover:text-brand">Loja</Link>
@@ -78,20 +48,29 @@ export default function Header() {
 
         <div className="hidden items-center gap-8 text-base lg:flex xl:text-lg">
           <Link
-            href={primeiroNome ? "/area-aluno" : "/login"}
+            href={logado ? "/area-aluno" : "/login"}
             className="flex items-center gap-2 hover:text-brand"
           >
             Área do Aluno
             <IconeAluno />
           </Link>
 
-          {primeiroNome ? (
-            <Link
-              href="/area-aluno"
-              className="font-medium text-white transition-colors hover:text-brand"
-            >
-              Olá, {primeiroNome}
-            </Link>
+          {logado ? (
+            <div className="flex items-center gap-5">
+              <Link
+                href="/minha-conta"
+                className="font-medium text-white transition-colors hover:text-brand"
+              >
+                Olá, {primeiroNome}
+              </Link>
+              <button
+                type="button"
+                onClick={sairDaConta}
+                className="cursor-pointer rounded-lg border border-white/30 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:border-brand hover:text-brand"
+              >
+                Sair
+              </button>
+            </div>
           ) : (
             <Link
               href="/cadastro"
@@ -104,19 +83,20 @@ export default function Header() {
 
         <button
           type="button"
-          className="cursor-pointer lg:hidden"
+          className="flex h-8.75 w-8.75 cursor-pointer items-center justify-center lg:hidden"
           aria-label="Abrir ou fechar o menu"
           aria-expanded={menuAberto}
           onClick={() => setMenuAberto(!menuAberto)}
         >
           <svg
-            width="28"
-            height="28"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="2.5"
             strokeLinecap="round"
+            aria-hidden="true"
           >
             {menuAberto ? (
               <path d="M6 6l12 12M18 6L6 18" />
@@ -131,7 +111,7 @@ export default function Header() {
       {menuAberto && (
         <nav className="flex flex-col gap-5 border-t border-white/10 px-6 py-6 text-lg lg:hidden">
           <Link href="/" onClick={fecharMenu}>
-            Home
+            Página Inicial
           </Link>
           <Link href="/#planos" onClick={fecharMenu}>
             Planos
@@ -146,7 +126,7 @@ export default function Header() {
             Sobre nós
           </Link>
           <Link
-            href={primeiroNome ? "/area-aluno" : "/login"}
+            href={logado ? "/area-aluno" : "/login"}
             onClick={fecharMenu}
             className="flex items-center gap-2"
           >
@@ -154,14 +134,19 @@ export default function Header() {
             <IconeAluno />
           </Link>
 
-          {primeiroNome ? (
-            <Link
-              href="/area-aluno"
-              onClick={fecharMenu}
-              className="py-2 text-center font-medium text-white transition-colors hover:text-brand"
-            >
-              Olá, {primeiroNome}
-            </Link>
+          {logado ? (
+            <>
+              <Link href="/minha-conta" onClick={fecharMenu}>
+                Olá, {primeiroNome} · Minha conta
+              </Link>
+              <button
+                type="button"
+                onClick={sairDaConta}
+                className="cursor-pointer rounded-lg border border-white/30 px-6 py-3 text-center font-semibold"
+              >
+                Sair
+              </button>
+            </>
           ) : (
             <Link
               href="/cadastro"

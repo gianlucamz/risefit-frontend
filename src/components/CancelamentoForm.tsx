@@ -21,7 +21,7 @@ export default function CancelamentoForm() {
         Entendo que estou solicitando a análise do cancelamento, não o
         encerramento imediato.
       </label>
-      <div className="mt-6 flex flex-wrap gap-3">
+      <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:flex-wrap sm:gap-3">
         <BotaoLink href="/minha-conta">Manter meu plano</BotaoLink>
         <Botao
           variante="secundario"
