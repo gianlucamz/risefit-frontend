@@ -1,13 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
-// Página de contato: salve como src/app/contato/page.tsx
-// O header e o footer já vêm do layout do site, então aqui ficam só o conteúdo.
-// Âncoras para o footer: #trabalhe-conosco, #central-de-ajuda e #faq
-//
-// Largura e margens: mesmo container das páginas de Profissionais, Planos e Sobre nós
-// (max-w-[1440px] com px-6 no celular e px-14 no desktop).
+// Página de contato (Atendimento). O header e o footer já vêm do layout do site.
+// Âncoras usadas pelo footer: #trabalhe-conosco, #contato, #central-de-ajuda e #faq.
 
 const areasInteresse = [
   "Recepção e atendimento",
@@ -30,7 +27,7 @@ const centralDeAjuda = [
   {
     titulo: "Planos e orientação",
     descricao:
-      "Entenda as diferenças de cada plano, como escolher o melhor para o seu início e como acessar o treino do dia.",
+      "Entenda os diferenciais de cada plano, como escolher o melhor para o seu início e como acessar o treino do dia.",
     icone: <IconeAjuda />,
   },
   {
@@ -43,7 +40,7 @@ const centralDeAjuda = [
     titulo: "Unidade e horários",
     descricao:
       "Confira endereço, funcionamento e horários de atendimento para visitas e orientações presenciais.",
-    icone: <IconePino />,
+    icone: <IconePino className="h-5 w-5" />,
   },
   {
     titulo: "Área do Aluno e progresso",
@@ -76,106 +73,119 @@ const perguntas = [
   },
 ];
 
-// Estilo repetido dos cartões brancos
-const cartao = "scroll-mt-28 rounded-2xl border border-gray-200 bg-white p-6 lg:p-8";
+// Estilos repetidos
+const cartao =
+  "scroll-mt-12 rounded-3xl border border-[#e4e6eb] bg-white px-5 py-6 sm:scroll-mt-28 sm:px-10 sm:py-10";
+const tituloCartao =
+  "text-[22px] leading-[30px] font-bold text-[#0a0c11] sm:text-[32px] sm:leading-10";
+const textoCartao = "mt-[11px] text-sm leading-[22px] text-[#6b7280] sm:text-base sm:leading-6";
 
 export default function ContatoPage() {
   return (
-    <main className="bg-white py-12 lg:py-16">
-      <div className="mx-auto max-w-[1440px] px-6 lg:px-14">
-        <p className="text-xs font-semibold uppercase tracking-widest text-[#7c3aed]">
-          Atendimento
-        </p>
-        <h1 className="mt-2 text-3xl font-bold text-gray-950 lg:text-4xl">
+    <main className="bg-white px-4 pt-10 pb-14 sm:px-6 lg:pt-[55px] lg:pb-[89px]">
+      <div className="mx-auto w-full max-w-[1200px]">
+        <p className="text-sm leading-5 font-semibold text-brand">Atendimento</p>
+        <h1 className="mt-3 text-[28px] leading-[35px] font-bold text-[#0a0c11] lg:mt-[19px] lg:text-[48px] lg:leading-14">
           Como podemos ajudar hoje?
         </h1>
 
         {/* Formulários */}
-        <div className="mt-8 grid items-start gap-6 lg:grid-cols-2">
-          <section id="trabalhe-conosco" className={cartao}>
-            <h2 className="text-2xl font-bold text-gray-950">Trabalhe conosco</h2>
-            <p className="mt-2 text-sm leading-relaxed text-gray-600 lg:text-base">
-              Se você acredita em academia acolhedora, orientação integrada e
-              progresso real, compartilhe seu interesse.
-            </p>
-
-            <Formulario
-              id="candidatura"
-              rotuloSelecao="Área de interesse"
-              placeholderSelecao="Selecione uma área"
-              opcoes={areasInteresse}
-              placeholderMensagem="Conte um pouco sobre sua experiência e o que você gostaria de desenvolver conosco"
-              botao="Enviar candidatura"
-              sucesso="Candidatura enviada! Entraremos em contato se surgir uma oportunidade."
-            />
-
-            <p className="mt-5 text-xs leading-relaxed text-gray-600 lg:text-sm">
+        <div className="mt-8 grid items-start gap-6 lg:mt-[54px] lg:grid-cols-[minmax(0,600fr)_minmax(0,568fr)] lg:gap-8">
+          <CartaoFormulario
+            id="trabalhe-conosco"
+            titulo="Trabalhe conosco"
+            descricao="Se você acredita em academia acolhedora, orientação integrada e progresso real, compartilhe seu interesse."
+            campoId="candidatura"
+            rotuloSelecao="Área de interesse"
+            placeholderSelecao="Selecione uma área"
+            opcoes={areasInteresse}
+            placeholderMensagem="Conte um pouco sobre sua experiência e o que você gostaria de desenvolver conosco"
+            botao="Enviar candidatura"
+            sucesso={{
+              cabecalho: "Trabalhe conosco • Interesse enviado",
+              titulo: "Interesse profissional enviado",
+              descricao:
+                "Seu interesse em oportunidades foi registrado no exemplo. O envio não representa uma oferta de emprego.",
+              observacao:
+                "Você pode continuar conhecendo a RiseFit ou voltar à página de atendimento.",
+              primario: { href: "/sobre-nos", texto: "Conhecer a RiseFit" },
+              secundario: { texto: "Voltar para atendimento" },
+            }}
+          >
+            <p className="mt-6 text-[13px] leading-5 text-[#6b7280]">
               Compartilhe seu perfil com a RiseFit. O envio demonstra interesse
               em oportunidades futuras e não representa uma oferta de emprego.
             </p>
-          </section>
+          </CartaoFormulario>
 
-          <section id="contato" className={cartao}>
-            <h2 className="text-2xl font-bold text-gray-950">Contato</h2>
-            <p className="mt-2 text-sm leading-relaxed text-gray-600 lg:text-base">
-              Preencha o formulário abaixo e nossa equipe irá te responder com a
-              orientação certa para o seu caso.
-            </p>
-
-            <Formulario
-              id="mensagem"
-              rotuloSelecao="Assunto"
-              placeholderSelecao="Selecione um assunto"
-              opcoes={assuntos}
-              placeholderMensagem="Descreva sua dúvida ou solicitação"
-              botao="Enviar mensagem"
-              sucesso="Mensagem enviada! Nossa equipe responderá em breve."
-            />
-
-            <div className="mt-6 rounded-xl bg-[#f5f3ff] p-5">
-              <p className="text-sm font-semibold text-gray-950 lg:text-base">
+          <CartaoFormulario
+            id="contato"
+            titulo="Contato"
+            descricao="Preencha o formulário abaixo e nossa equipe irá te responder com a orientação certa para o seu caso."
+            campoId="mensagem"
+            rotuloSelecao="Assunto"
+            placeholderSelecao="Selecione um assunto"
+            opcoes={assuntos}
+            placeholderMensagem="Descreva sua dúvida ou solicitação"
+            botao="Enviar mensagem"
+            sucesso={{
+              cabecalho: "Contato • Mensagem enviada",
+              titulo: "Mensagem enviada",
+              descricao:
+                "Sua mensagem foi registrada no exemplo. A equipe poderá usar o contato informado para dar continuidade ao atendimento.",
+              observacao:
+                "Enquanto isso, consulte as perguntas frequentes ou retorne para a Página Inicial.",
+              primario: { href: "#faq", texto: "Ver perguntas frequentes" },
+              secundario: { href: "/", texto: "Voltar para Página Inicial" },
+            }}
+          >
+            <div className="mt-6 rounded-[18px] bg-[#f8f6ff] px-5 pt-5 pb-[22px]">
+              <p className="text-sm leading-5 font-semibold text-[#0a0c11]">
                 Informações de atendimento
               </p>
-              <ul className="mt-3 space-y-3 text-sm text-gray-700 lg:text-base">
-                <li className="flex items-center gap-3">
-                  <span className="text-[#7c3aed]">
-                    <IconePino />
+              <ul className="mt-3 space-y-3.5 text-sm leading-5 text-[#6b7280]">
+                <li className="flex items-start gap-3">
+                  <span className="mt-px text-brand">
+                    <IconePino className="h-[18px] w-[18px]" />
                   </span>
                   Avenida Acre, 243 – Indaiá, Caraguatatuba – SP
                 </li>
-                <li className="flex items-center gap-3">
-                  <span className="text-[#7c3aed]">
+                <li className="flex items-start gap-3">
+                  <span className="mt-px text-brand">
                     <IconeRelogio />
                   </span>
-                  08:00 às 20:00 · Segunda a Sexta, horário de Brasília
+                  08:00 às 20:00 - Segunda a Sexta, horário de Brasília
                 </li>
               </ul>
             </div>
-          </section>
+          </CartaoFormulario>
         </div>
 
         {/* Central de ajuda */}
-        <section id="central-de-ajuda" className={`mt-6 ${cartao}`}>
-          <h2 className="text-2xl font-bold text-gray-950">Central de ajuda</h2>
-          <p className="mt-2 text-sm text-gray-600 lg:text-base">
+        <section
+          id="central-de-ajuda"
+          className={`mt-6 lg:mt-[46px] ${cartao}`}
+        >
+          <h2 className={tituloCartao}>Central de ajuda</h2>
+          <p className={textoCartao}>
             Encontre respostas rápidas para os principais temas da sua jornada na
             RiseFit.
           </p>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="mt-6 grid gap-3 lg:grid-cols-2">
             {centralDeAjuda.map((item) => (
               <article
                 key={item.titulo}
-                className="flex items-start gap-4 rounded-xl bg-[#f7f7fa] p-5"
+                className="flex flex-col items-start gap-4 rounded-[18px] bg-[#f9f9fb] p-4 sm:flex-row sm:items-center sm:py-5 sm:pr-6 sm:pl-5"
               >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#7c3aed] text-white">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand text-white">
                   {item.icone}
                 </span>
                 <div>
-                  <h3 className="text-base font-semibold text-gray-950 lg:text-lg">
+                  <h3 className="text-base leading-6 font-semibold text-[#0a0c11]">
                     {item.titulo}
                   </h3>
-                  <p className="mt-1 text-sm leading-relaxed text-gray-600 lg:text-base">
+                  <p className="mt-0.5 text-sm leading-[22px] text-[#6b7280]">
                     {item.descricao}
                   </p>
                 </div>
@@ -185,28 +195,26 @@ export default function ContatoPage() {
         </section>
 
         {/* Perguntas frequentes */}
-        <section id="faq" className={`mt-6 ${cartao}`}>
-          <h2 className="text-center text-2xl font-bold text-gray-950">
-            Perguntas frequentes
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 lg:text-base">
+        <section id="faq" className={`mt-6 lg:mt-[46px] ${cartao}`}>
+          <h2 className={`sm:text-center ${tituloCartao}`}>Perguntas frequentes</h2>
+          <p className={`sm:text-center ${textoCartao}`}>
             Respostas rápidas para facilitar sua navegação antes de entrar em
             contato.
           </p>
 
-          <div className="mt-6 space-y-3">
+          <div className="mt-6 space-y-2.5">
             {perguntas.map((item) => (
               <details
                 key={item.pergunta}
-                className="rounded-xl border border-gray-200 bg-white px-5 py-4"
+                className="group rounded-2xl border border-[#e4e6eb] bg-white"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-gray-950 lg:text-base [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-[62px] cursor-pointer list-none items-center justify-between gap-4 py-3 pr-6 pl-5 text-base leading-6 font-semibold text-[#0a0c11] [&::-webkit-details-marker]:hidden">
                   {item.pergunta}
-                  <span className="text-gray-600 transition-transform [details[open]_&]:rotate-180">
+                  <span className="shrink-0 text-[#6b7280] transition-transform group-open:rotate-180">
                     <IconeSeta />
                   </span>
                 </summary>
-                <p className="mt-3 text-sm leading-relaxed text-gray-600 lg:text-base">
+                <p className="-mt-1 px-5 pb-5 text-sm leading-[22px] text-[#6b7280] sm:text-base sm:leading-6">
                   {item.resposta}
                 </p>
               </details>
@@ -218,26 +226,44 @@ export default function ContatoPage() {
   );
 }
 
-/* ---------- Formulário (usado nos dois cartões) ---------- */
+/* ---------- Cartão com formulário (usado em "Trabalhe conosco" e "Contato") ---------- */
 
 type Valores = { nome: string; email: string; selecao: string; mensagem: string };
 
-function Formulario({
+type Sucesso = {
+  cabecalho: string;
+  titulo: string;
+  descricao: string;
+  observacao: string;
+  primario: { href: string; texto: string };
+  // Sem href, o botão volta para o formulário (continua na página de atendimento)
+  secundario: { href?: string; texto: string };
+};
+
+function CartaoFormulario({
   id,
+  titulo,
+  descricao,
+  campoId,
   rotuloSelecao,
   placeholderSelecao,
   opcoes,
   placeholderMensagem,
   botao,
   sucesso,
+  children,
 }: {
   id: string;
+  titulo: string;
+  descricao: string;
+  campoId: string;
   rotuloSelecao: string;
   placeholderSelecao: string;
   opcoes: string[];
   placeholderMensagem: string;
   botao: string;
-  sucesso: string;
+  sucesso: Sucesso;
+  children?: React.ReactNode;
 }) {
   const vazio: Valores = { nome: "", email: "", selecao: "", mensagem: "" };
   const [valores, setValores] = useState<Valores>(vazio);
@@ -246,7 +272,6 @@ function Formulario({
 
   function atualizar(campo: keyof Valores, valor: string) {
     setValores((atual) => ({ ...atual, [campo]: valor }));
-    setEnviado(false);
   }
 
   function aoEnviar(e: React.FormEvent<HTMLFormElement>) {
@@ -262,95 +287,138 @@ function Formulario({
     setErros(novos);
     if (Object.keys(novos).length > 0) return;
 
-    // TODO: enviar os dados para a sua API / serviço de e-mail
-    console.log(id, valores);
-
+    // TODO: enviar os dados para a API / serviço de e-mail quando existir.
     setValores(vazio);
     setEnviado(true);
   }
 
+  if (enviado) {
+    return (
+      <section
+        id={id}
+        role="status"
+        className="scroll-mt-28 rounded-[20px] border border-[#e4e6eb] bg-white px-5 pt-[29px] pb-[27px] sm:px-7"
+      >
+        <h2 className="text-lg leading-7 font-semibold text-[#0a0c11] sm:text-[22px]">
+          {sucesso.cabecalho}
+        </h2>
+        <div className="mt-[25px] flex flex-col items-center text-center">
+          <span className="text-brand">
+            <IconeCheck />
+          </span>
+          <p className="mt-[21px] text-2xl leading-8 font-semibold text-[#0a0c11] sm:text-[30px] sm:leading-9">
+            {sucesso.titulo}
+          </p>
+          <p className="mt-[21px] text-base leading-6 text-[#6b7280]">
+            {sucesso.descricao}
+          </p>
+        </div>
+        <p className="mt-[21px] text-sm leading-5 text-[#6b7280]">
+          {sucesso.observacao}
+        </p>
+        <div className="mt-[21px] flex flex-col gap-5">
+          <Link href={sucesso.primario.href} className={`${estiloBotao} bg-brand text-white hover:bg-[#6d28d9]`}>
+            {sucesso.primario.texto}
+          </Link>
+          {sucesso.secundario.href ? (
+            <Link
+              href={sucesso.secundario.href}
+              className={`${estiloBotao} border border-[#d1d4db] bg-white text-[#0a0c11] hover:border-brand hover:text-brand`}
+            >
+              {sucesso.secundario.texto}
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setEnviado(false)}
+              className={`${estiloBotao} cursor-pointer border border-[#d1d4db] bg-white text-[#0a0c11] hover:border-brand hover:text-brand`}
+            >
+              {sucesso.secundario.texto}
+            </button>
+          )}
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <form onSubmit={aoEnviar} noValidate className="mt-6 space-y-5">
-      <Campo id={`${id}-nome`} rotulo="Nome completo" erro={erros.nome}>
-        <input
-          id={`${id}-nome`}
-          type="text"
-          autoComplete="name"
-          placeholder="Seu nome"
-          value={valores.nome}
-          onChange={(e) => atualizar("nome", e.target.value)}
-          className={estiloCampo(erros.nome)}
-          {...ariaErro(`${id}-nome`, erros.nome)}
-        />
-      </Campo>
+    <section id={id} className={cartao}>
+      <h2 className={tituloCartao}>{titulo}</h2>
+      <p className={textoCartao}>{descricao}</p>
 
-      <Campo id={`${id}-email`} rotulo="E-mail" erro={erros.email}>
-        <input
-          id={`${id}-email`}
-          type="email"
-          autoComplete="email"
-          placeholder="nome@email.com"
-          value={valores.email}
-          onChange={(e) => atualizar("email", e.target.value)}
-          className={estiloCampo(erros.email)}
-          {...ariaErro(`${id}-email`, erros.email)}
-        />
-      </Campo>
+      <form onSubmit={aoEnviar} noValidate className="mt-6 flex flex-col gap-[13px]">
+        <Campo id={`${campoId}-nome`} rotulo="Nome completo" erro={erros.nome}>
+          <input
+            id={`${campoId}-nome`}
+            type="text"
+            autoComplete="name"
+            placeholder="Seu nome"
+            value={valores.nome}
+            onChange={(e) => atualizar("nome", e.target.value)}
+            className={estiloCampo(erros.nome)}
+            {...ariaErro(`${campoId}-nome`, erros.nome)}
+          />
+        </Campo>
 
-      <Campo id={`${id}-selecao`} rotulo={rotuloSelecao} erro={erros.selecao}>
-        <div className="relative">
+        <Campo id={`${campoId}-email`} rotulo="E-mail" erro={erros.email}>
+          <input
+            id={`${campoId}-email`}
+            type="email"
+            autoComplete="email"
+            placeholder="nome@email.com"
+            value={valores.email}
+            onChange={(e) => atualizar("email", e.target.value)}
+            className={estiloCampo(erros.email)}
+            {...ariaErro(`${campoId}-email`, erros.email)}
+          />
+        </Campo>
+
+        <Campo id={`${campoId}-selecao`} rotulo={rotuloSelecao} erro={erros.selecao}>
           <select
-            id={`${id}-selecao`}
+            id={`${campoId}-selecao`}
             value={valores.selecao}
             onChange={(e) => atualizar("selecao", e.target.value)}
-            className={`${estiloCampo(erros.selecao)} appearance-none pr-12 ${
-              valores.selecao ? "text-gray-950" : "text-gray-500"
+            className={`${estiloCampo(erros.selecao)} cursor-pointer appearance-none ${
+              valores.selecao ? "text-[#0a0c11]" : "text-[#9ca3af]"
             }`}
-            {...ariaErro(`${id}-selecao`, erros.selecao)}
+            {...ariaErro(`${campoId}-selecao`, erros.selecao)}
           >
             <option value="">{placeholderSelecao}</option>
             {opcoes.map((opcao) => (
-              <option key={opcao} value={opcao} className="text-gray-950">
+              <option key={opcao} value={opcao} className="text-[#0a0c11]">
                 {opcao}
               </option>
             ))}
           </select>
-          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-600">
-            <IconeSeta />
-          </span>
-        </div>
-      </Campo>
+        </Campo>
 
-      <Campo id={`${id}-mensagem`} rotulo="Mensagem" erro={erros.mensagem}>
-        <textarea
-          id={`${id}-mensagem`}
-          rows={4}
-          placeholder={placeholderMensagem}
-          value={valores.mensagem}
-          onChange={(e) => atualizar("mensagem", e.target.value)}
-          className={`${estiloCampo(erros.mensagem)} h-auto min-h-[130px] resize-y py-3`}
-          {...ariaErro(`${id}-mensagem`, erros.mensagem)}
-        />
-      </Campo>
+        <Campo id={`${campoId}-mensagem`} rotulo="Mensagem" erro={erros.mensagem}>
+          <textarea
+            id={`${campoId}-mensagem`}
+            rows={4}
+            placeholder={placeholderMensagem}
+            value={valores.mensagem}
+            onChange={(e) => atualizar("mensagem", e.target.value)}
+            className={`${estiloCampo(erros.mensagem)} block h-[142px] resize-none py-4 leading-6`}
+            {...ariaErro(`${campoId}-mensagem`, erros.mensagem)}
+          />
+        </Campo>
 
-      <button
-        type="submit"
-        className="w-full rounded-lg bg-[#7c3aed] py-3.5 text-sm font-semibold text-white transition hover:bg-[#6d28d9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a78bfa] lg:text-base"
-      >
-        {botao}
-      </button>
-
-      {enviado && (
-        <p
-          role="status"
-          className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800 lg:text-base"
+        <button
+          type="submit"
+          className="mt-[10px] h-[52px] w-full cursor-pointer rounded-xl bg-brand text-base font-semibold text-white transition-colors hover:bg-[#6d28d9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
-          {sucesso}
-        </p>
-      )}
-    </form>
+          {botao}
+        </button>
+      </form>
+
+      {children}
+    </section>
   );
 }
+
+const estiloBotao =
+  "inline-flex h-12 w-full items-center justify-center rounded-xl px-4 text-[15px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 
 function Campo({
   id,
@@ -367,7 +435,7 @@ function Campo({
     <div>
       <label
         htmlFor={id}
-        className="mb-2 block text-sm font-semibold text-gray-950 lg:text-base"
+        className="mb-2 block text-sm leading-5 font-semibold text-[#0a0c11]"
       >
         {rotulo}
       </label>
@@ -382,8 +450,8 @@ function Campo({
 }
 
 function estiloCampo(erro?: string) {
-  return `h-12 w-full rounded-lg border bg-[#f7f7fa] px-4 text-sm text-gray-950 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 lg:h-14 lg:text-base ${
-    erro ? "border-red-500" : "border-gray-200 focus:border-[#7c3aed]"
+  return `h-[54px] w-full rounded-xl border bg-white px-4 sm:bg-[#f9f9fb] text-[15px] text-[#0a0c11] placeholder:text-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-brand/30 ${
+    erro ? "border-red-500" : "border-[#e4e6eb] focus:border-brand"
   }`;
 }
 
@@ -400,24 +468,41 @@ const base = {
   viewBox: "0 0 24 24",
   fill: "none",
   stroke: "currentColor",
-  strokeWidth: 1.8,
+  strokeWidth: 2,
   strokeLinecap: "round" as const,
   strokeLinejoin: "round" as const,
   "aria-hidden": true,
-  className: "h-5 w-5",
 };
 
 function IconeSeta() {
   return (
-    <svg {...base} className="h-4 w-4">
-      <path d="M6 9l6 6 6-6" />
+    <svg
+      viewBox="0 0 12 8"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="h-2 w-3"
+    >
+      <path d="M1 1.5l5 5 5-5" />
+    </svg>
+  );
+}
+
+function IconeCheck() {
+  return (
+    <svg {...base} strokeWidth={1.6} className="h-9 w-9">
+      <circle cx="12" cy="12" r="10.2" />
+      <path d="M7.8 12.4l2.9 2.9 5.6-6" />
     </svg>
   );
 }
 
 function IconeAjuda() {
   return (
-    <svg {...base} className="h-6 w-6">
+    <svg {...base} className="h-5 w-5">
       <circle cx="12" cy="12" r="9" />
       <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7" />
       <path d="M12 17h.01" />
@@ -427,16 +512,16 @@ function IconeAjuda() {
 
 function IconeCartao() {
   return (
-    <svg {...base} className="h-6 w-6">
+    <svg {...base} className="h-5 w-5">
       <rect x="3" y="5" width="18" height="14" rx="2" />
       <path d="M3 10h18" />
     </svg>
   );
 }
 
-function IconePino() {
+function IconePino({ className }: { className: string }) {
   return (
-    <svg {...base} className="h-5 w-5 shrink-0">
+    <svg {...base} className={`${className} shrink-0`}>
       <path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z" />
       <circle cx="12" cy="10" r="2.5" />
     </svg>
@@ -445,16 +530,15 @@ function IconePino() {
 
 function IconeEscudo() {
   return (
-    <svg {...base} className="h-6 w-6">
+    <svg {...base} className="h-5 w-5">
       <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" />
-      <path d="M9 12l2 2 4-4" />
     </svg>
   );
 }
 
 function IconeRelogio() {
   return (
-    <svg {...base} className="h-5 w-5 shrink-0">
+    <svg {...base} className="h-[18px] w-[18px] shrink-0">
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v5l3 2" />
     </svg>

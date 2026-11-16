@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import ProdutoCard from "./ProdutoCard";
+import SomenteVisitante from "./SomenteVisitante";
 import {
   categorias,
   maisVendidosIds,
@@ -101,17 +102,24 @@ export default function LojaCatalogo() {
           <h2 className="text-sm font-bold">Configurações</h2>
           <ul className="mt-3 space-y-2">
             <li>
-              <Link href="/area-aluno" className={linkSidebar}>
-                Faça seu login
+              <Link href="/carrinho" className={linkSidebar}>
+                Meu carrinho
               </Link>
             </li>
+            <SomenteVisitante>
+              <li>
+                <Link href="/login" className={linkSidebar}>
+                  Faça seu login
+                </Link>
+              </li>
+            </SomenteVisitante>
             <li>
               <Link href="/contato" className={linkSidebar}>
                 Contato
               </Link>
             </li>
             <li>
-              <Link href="/area-aluno" className={linkSidebar}>
+              <Link href="/minha-conta" className={linkSidebar}>
                 Minha Conta
               </Link>
             </li>

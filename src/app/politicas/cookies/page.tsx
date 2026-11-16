@@ -4,45 +4,41 @@ export const metadata = {
   title: "Política de Cookies | RiseFit",
 };
 
-// TEXTO-BASE: confirme a lista de tecnologias com quem mantém o site
-// (e atualize se forem adicionados analytics, anúncios ou outros serviços).
+// Texto preliminar (igual ao design): confirme a lista de tecnologias com quem mantém o site.
 export default function PoliticaCookies() {
   return (
     <PaginaPolitica
       titulo="Política de Cookies"
-      descricao="Entenda o uso de registros de navegação no nosso site."
+      descricao="Entenda o uso de registros de navegação e os temas em revisão."
       secoes={[
         {
           titulo: "1. O que são cookies",
           paragrafos: [
-            "Cookies são pequenos arquivos que um site pode armazenar no seu navegador para lembrar informações da sua navegação. Tecnologias semelhantes, como o armazenamento local do navegador, também entram nesta política.",
+            "Cookies são pequenos registros que um site pode armazenar no navegador para reconhecer informações de navegação. Tecnologias semelhantes também devem ser consideradas na revisão desta página.",
           ],
         },
         {
           titulo: "2. Categorias de uso",
           paragrafos: [
-            "Podemos usar registros necessários ao funcionamento do site, de preferências (para lembrar escolhas suas), de desempenho e, se forem adotados, de comunicação ou publicidade.",
-            "Os registros necessários não dependem do seu consentimento, pois sem eles o site não funciona corretamente.",
+            "As categorias a revisar incluem recursos necessários ao funcionamento, preferências, medição de uso e comunicações ou publicidade, quando existentes. A presença de uma categoria nesta estrutura não significa que ela já seja utilizada pela RiseFit.",
           ],
         },
         {
           titulo: "3. Inventário a validar",
           paragrafos: [
-            "Hoje o site usa o armazenamento do navegador para manter o seu nome na barra superior depois do login e para guardar temporariamente os dados do cadastro enquanto você o preenche.",
-            "Se novas tecnologias forem adicionadas, como ferramentas de medição de audiência, esta lista será atualizada com a finalidade de cada uma.",
+            "Antes da publicação, é necessário confirmar quais tecnologias são utilizadas, seus nomes, suas finalidades, responsáveis e duração. Fornecedores e eventuais destinatários: a validar. Nenhuma ferramenta específica é confirmada nesta versão.",
           ],
         },
         {
           titulo: "4. Preferências de navegação",
           paragrafos: [
-            "Você pode consultar as configurações do seu navegador para gerenciar ou apagar cookies e dados de sites. Bloquear os registros necessários pode afetar partes do site, como o login e o cadastro.",
+            "Você pode consultar as configurações do navegador para gerenciar o armazenamento de cookies. A restrição de recursos necessários pode afetar partes da navegação. Os controles específicos do site e o tratamento das escolhas devem ser validados antes de sua apresentação como disponíveis.",
           ],
         },
         {
           titulo: "5. Revisão e atendimento",
           paragrafos: [
-            "Esta política pode ser atualizada quando houver mudanças nas tecnologias usadas pelo site. Consulte também a Política de Privacidade para saber como tratamos seus dados.",
-            "Se tiver dúvidas, fale com a gente pela página de contato.",
+            "As informações desta página devem acompanhar o inventário real de tecnologias do site. Versão, data de atualização e procedimentos de revisão: a validar. Para dúvidas, utilize a página de atendimento. Consulte também a Política de Privacidade preliminar.",
           ],
         },
       ]}

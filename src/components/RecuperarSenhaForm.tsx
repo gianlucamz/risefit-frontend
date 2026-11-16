@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { AlertaErro, AlertaSucesso, BotaoAcesso } from "./AcessoUI";
+import { AlertaErro, BotaoAcesso } from "./AcessoUI";
+import { BotaoLink, IconeEmail, PainelEstado } from "./PainelUI";
 import { CampoFormulario, LogoRiseFit, validarEmail } from "./CadastroForm";
 import { solicitarRecuperacaoSenhaAPI } from "@/services/api";
 
@@ -41,6 +42,31 @@ export default function RecuperarSenhaForm() {
     }
   }
 
+  if (enviado) {
+    return (
+      <div role="status">
+        <PainelEstado
+          embutido
+          icone={<IconeEmail />}
+          titulo="Confira seu e-mail"
+          descricao="Se o e-mail informado estiver cadastrado, você receberá as instruções para redefinir sua senha."
+          observacao="Confira também a caixa de spam. Caso tenha digitado o endereço incorretamente, volte e tente novamente."
+        >
+          <BotaoLink href="/login" larguraTotal>
+            Voltar para o login
+          </BotaoLink>
+          <button
+            type="button"
+            onClick={() => setEnviado(false)}
+            className="cursor-pointer self-start text-sm font-medium text-brand hover:underline"
+          >
+            Informar outro e-mail
+          </button>
+        </PainelEstado>
+      </div>
+    );
+  }
+
   return (
     <>
       <LogoRiseFit className="!justify-start" />
@@ -53,38 +79,28 @@ export default function RecuperarSenhaForm() {
         uma nova senha.
       </p>
 
-      {enviado ? (
-        <div className="mt-8 space-y-5">
-          <AlertaSucesso>
-            Se existir uma conta com o e-mail <strong>{email.trim()}</strong>,
-            você receberá as instruções em instantes. Confira também a caixa de
-            spam.
-          </AlertaSucesso>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
-          <CampoFormulario
-            id="email"
-            rotulo="E-mail cadastrado"
-            tipo="email"
-            valor={email}
-            placeholder="Digite seu e-mail"
-            autoComplete="email"
-            inputMode="email"
-            aoMudar={(v) => {
-              setEmail(v);
-              if (erro) setErro("");
-            }}
-            erro={erro}
-          />
+      <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
+        <CampoFormulario
+          id="email"
+          rotulo="E-mail cadastrado"
+          tipo="email"
+          valor={email}
+          placeholder="Digite seu e-mail"
+          autoComplete="email"
+          inputMode="email"
+          aoMudar={(v) => {
+            setEmail(v);
+            if (erro) setErro("");
+          }}
+          erro={erro}
+        />
 
-          {erroGeral && <AlertaErro>{erroGeral}</AlertaErro>}
+        {erroGeral && <AlertaErro>{erroGeral}</AlertaErro>}
 
-          <BotaoAcesso carregando={carregando} textoCarregando="Enviando...">
-            Enviar instruções
-          </BotaoAcesso>
-        </form>
-      )}
+        <BotaoAcesso carregando={carregando} textoCarregando="Enviando...">
+          Enviar instruções
+        </BotaoAcesso>
+      </form>
 
       <Link
         href="/login"

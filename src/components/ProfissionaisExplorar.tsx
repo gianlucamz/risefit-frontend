@@ -2,70 +2,11 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import ProfissionalCard from "./ProfissionalCard";
+import { Botao, IconeBusca, PainelEstado } from "./PainelUI";
+import { objetivos, profissionais, type ObjetivoId } from "@/data/profissionais";
 
-// ---------- Tipos e dados de demonstração ----------
-export type ObjetivoId =
-  | "musculo"
-  | "emagrecer"
-  | "condicionamento"
-  | "lesao"
-  | "alimentacao";
-
-export type Profissional = {
-  id: string;
-  nome: string;
-  avaliacao: number;
-  avaliacoes: number;
-  descricao: string;
-  especialidades: string[];
-  objetivos: ObjetivoId[];
-  foto: string;
-};
-
-const objetivos: { id: ObjetivoId; rotulo: string }[] = [
-  { id: "musculo", rotulo: "Ganhar massa muscular" },
-  { id: "emagrecer", rotulo: "Emagrecer" },
-  { id: "condicionamento", rotulo: "Melhorar o condicionamento" },
-  { id: "lesao", rotulo: "Recuperar de lesão" },
-  { id: "alimentacao", rotulo: "Melhorar minha alimentação" },
-];
-
-// Profissionais de DEMONSTRAÇÃO (não são cadastros reais). Troque pelos dados reais quando houver.
-const profissionais: Profissional[] = [
-  {
-    id: "lucas-andrade",
-    nome: "Lucas Andrade",
-    avaliacao: 4.8,
-    avaliacoes: 48,
-    descricao:
-      "Foco em hipertrofia e força, com treinos planejados para quem quer evoluir com segurança.",
-    especialidades: ["Musculação", "Hipertrofia", "Força"],
-    objetivos: ["musculo", "condicionamento"],
-    foto: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: "mariana-costa",
-    nome: "Mariana Costa",
-    avaliacao: 4.9,
-    avaliacoes: 36,
-    descricao:
-      "Treinos funcionais e orientação nutricional para emagrecer com saúde e constância.",
-    especialidades: ["Emagrecimento", "Funcional", "Nutrição"],
-    objetivos: ["emagrecer", "condicionamento", "alimentacao"],
-    foto: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: "rafael-oliveira",
-    nome: "Rafael Oliveira",
-    avaliacao: 4.8,
-    avaliacoes: 41,
-    descricao:
-      "Reabilitação e mobilidade para voltar a treinar após uma lesão, no seu ritmo.",
-    especialidades: ["Reabilitação", "Mobilidade", "Condicionamento"],
-    objetivos: ["lesao", "condicionamento"],
-    foto: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=900&q=80",
-  },
-];
+// Dados de demonstração dos profissionais ficam em src/data/profissionais.ts
+// (os mesmos usados na página de perfil /profissionais/[id]).
 
 type Ordem = "relevancia" | "avaliacao" | "avaliacoes" | "nome";
 
@@ -168,7 +109,7 @@ export default function ProfissionaisExplorar() {
                   }`}
                 >
                   <span className="text-brand">{icones[item.id]}</span>
-                  {item.rotulo}
+                  {item.rotulo.join(" ")}
                 </button>
               );
             })}
@@ -235,7 +176,25 @@ export default function ProfissionaisExplorar() {
               ))}
             </div>
           ) : (
-            <p className="mt-8 text-sm text-gray-500">Nenhum profissional encontrado.</p>
+            <div className="mx-auto mt-8 max-w-xl">
+              <PainelEstado
+                icone={<IconeBusca />}
+                titulo="Nenhum resultado encontrado"
+                descricao="Não encontramos profissionais para esta busca. Tente outro nome ou revise os filtros."
+              >
+                <Botao
+                  variante="secundario"
+                  larguraTotal
+                  onClick={() => {
+                    setBusca("");
+                    setEspecialidade("");
+                    setObjetivo(null);
+                  }}
+                >
+                  Limpar busca e filtros
+                </Botao>
+              </PainelEstado>
+            </div>
           )}
         </section>
       </div>

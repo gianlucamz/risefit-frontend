@@ -6,10 +6,12 @@ export default function Home() {
   return (
     <main>
       <Hero />
-      <Planos />
-      <section id="sobre-nos">
-        <SobreNos />
-      </section>
+      <div className="bg-[#f8f8f9]">
+        <Planos />
+        <section id="sobre-nos">
+          <SobreNos />
+        </section>
+      </div>
     </main>
   );
 }

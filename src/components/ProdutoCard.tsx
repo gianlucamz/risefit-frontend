@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import type { Produto } from "@/data/produtos";
+import { useCarrinho } from "@/lib/carrinho";
 
 const moeda = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -13,14 +15,20 @@ export default function ProdutoCard({ produto }: { produto: Produto }) {
   // Sem imagem (ou se ela falhar), mostra um ícone no lugar
   const [imagemFalhou, setImagemFalhou] = useState(false);
   const mostrarImagem = produto.imagem && !imagemFalhou;
+  const { itens, adicionar } = useCarrinho();
+  const noCarrinho = itens.find((i) => i.id === produto.id)?.quantidade ?? 0;
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl bg-white p-4 shadow-md">
-      <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-50">
+      <Link
+        href={`/loja/${produto.id}`}
+        aria-label={produto.nome}
+        className="relative block aspect-square w-full overflow-hidden rounded-xl bg-gray-50 transition-opacity hover:opacity-90"
+      >
         {mostrarImagem ? (
           <Image
             src={produto.imagem!}
-            alt={produto.nome}
+            alt=""
             fill
             sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
             className="object-contain p-3"
@@ -45,14 +53,31 @@ export default function ProdutoCard({ produto }: { produto: Produto }) {
             </svg>
           </div>
         )}
-      </div>
+      </Link>
 
       <h3 className="mt-4 line-clamp-3 min-h-[3.75em] text-xs font-bold leading-tight text-dark">
-        {produto.nome}
+        <Link href={`/loja/${produto.id}`} className="hover:text-brand">
+          {produto.nome}
+        </Link>
       </h3>
       <p className="mt-3 text-sm font-extrabold text-dark">
         {moeda.format(produto.preco)}
       </p>
+      <button
+        type="button"
+        onClick={() => adicionar(produto.id)}
+        className="mt-3 cursor-pointer rounded-lg border border-brand px-3 py-2 text-xs font-semibold text-brand transition-colors hover:bg-brand hover:text-white"
+      >
+        Adicionar ao carrinho
+      </button>
+      {noCarrinho > 0 && (
+        <Link
+          href="/carrinho"
+          className="mt-2 text-center text-xs font-medium text-brand hover:underline"
+        >
+          Ver carrinho ({noCarrinho})
+        </Link>
+      )}
     </article>
   );
 }

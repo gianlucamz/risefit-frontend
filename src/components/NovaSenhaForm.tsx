@@ -2,12 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import {
-  AlertaErro,
-  AlertaSucesso,
-  BotaoAcesso,
-  CampoSenha,
-} from "./AcessoUI";
+import { AlertaErro, BotaoAcesso, CampoSenha } from "./AcessoUI";
+import { BotaoLink, IconeCheck, PainelEstado } from "./PainelUI";
 import { redefinirSenhaAPI } from "@/services/api";
 
 export default function NovaSenhaForm({ token }: { token?: string }) {
@@ -63,6 +59,30 @@ export default function NovaSenhaForm({ token }: { token?: string }) {
     }
   }
 
+  if (concluido) {
+    return (
+      <div role="status">
+        <PainelEstado
+          embutido
+          icone={<IconeCheck />}
+          titulo="Senha redefinida"
+          descricao="Agora você pode voltar para o login e usar sua nova senha para acessar a conta."
+          observacao="Por segurança, não compartilhe sua senha. Se não reconhecer a alteração, procure o atendimento."
+        >
+          <BotaoLink href="/login" larguraTotal>
+            Entrar na minha conta
+          </BotaoLink>
+          <Link
+            href="/contato#contato"
+            className="self-start text-sm font-medium text-brand hover:underline"
+          >
+            Procurar atendimento
+          </Link>
+        </PainelEstado>
+      </div>
+    );
+  }
+
   return (
     <>
       <h1 className="text-2xl font-extrabold text-dark sm:text-3xl">
@@ -72,77 +92,60 @@ export default function NovaSenhaForm({ token }: { token?: string }) {
         Escolha uma senha segura para proteger a sua conta.
       </p>
 
-      {concluido ? (
-        <div className="mt-8 space-y-5">
-          <AlertaSucesso>
-            Senha alterada com sucesso! Agora você já pode entrar com a nova
-            senha.
-          </AlertaSucesso>
-          <Link
-            href="/login"
-            className="inline-block w-full rounded-lg bg-brand px-6 py-3.5 text-center text-base font-semibold text-white transition-colors hover:bg-[#6d28d9]"
-          >
-            Ir para o login
-          </Link>
-        </div>
-      ) : (
-        <>
-          <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
-            <CampoSenha
-              id="nova-senha"
-              rotulo="Nova senha"
-              valor={senha}
-              placeholder="Digite sua nova senha"
-              autoComplete="new-password"
-              dica="Use pelo menos 8 caracteres."
-              aoMudar={(v) => {
-                setSenha(v);
-                if (erros.senha) setErros((prev) => ({ ...prev, senha: "" }));
-              }}
-              erro={erros.senha}
-            />
+      <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
+        <CampoSenha
+          id="nova-senha"
+          rotulo="Nova senha"
+          valor={senha}
+          placeholder="Digite sua nova senha"
+          autoComplete="new-password"
+          dica="Use pelo menos 8 caracteres."
+          aoMudar={(v) => {
+            setSenha(v);
+            if (erros.senha) setErros((prev) => ({ ...prev, senha: "" }));
+          }}
+          erro={erros.senha}
+        />
 
-            <CampoSenha
-              id="confirmar-senha"
-              rotulo="Confirmar nova senha"
-              valor={confirmacao}
-              placeholder="Digite a nova senha novamente"
-              autoComplete="new-password"
-              aoMudar={(v) => {
-                setConfirmacao(v);
-                if (erros.confirmacao)
-                  setErros((prev) => ({ ...prev, confirmacao: "" }));
-              }}
-              erro={erros.confirmacao}
-            />
+        <CampoSenha
+          id="confirmar-senha"
+          rotulo="Confirmar nova senha"
+          valor={confirmacao}
+          placeholder="Digite a nova senha novamente"
+          autoComplete="new-password"
+          aoMudar={(v) => {
+            setConfirmacao(v);
+            if (erros.confirmacao)
+              setErros((prev) => ({ ...prev, confirmacao: "" }));
+          }}
+          erro={erros.confirmacao}
+        />
 
-            {erroGeral && (
-              <AlertaErro>
-                {erroGeral}{" "}
-                {!token && (
-                  <Link
-                    href="/recuperar-senha"
-                    className="font-semibold underline"
-                  >
-                    Solicitar novo link
-                  </Link>
-                )}
-              </AlertaErro>
+        {erroGeral && (
+          <AlertaErro>
+            {erroGeral}{" "}
+            {!token && (
+              <Link
+                href="/recuperar-senha"
+                className="font-semibold underline"
+              >
+                Solicitar novo link
+              </Link>
             )}
+          </AlertaErro>
+        )}
 
-            <BotaoAcesso carregando={carregando} textoCarregando="Salvando...">
-              Salvar nova senha
-            </BotaoAcesso>
-          </form>
+        <BotaoAcesso carregando={carregando} textoCarregando="Salvando...">
+          Salvar nova senha
+        </BotaoAcesso>
+      </form>
 
-          <Link
-            href="/login"
-            className="mt-6 inline-block text-sm font-medium text-brand hover:underline"
-          >
-            Voltar para login
-          </Link>
-        </>
-      )}
+      <Link
+        href="/login"
+        className="mt-6 inline-block text-sm font-medium text-brand hover:underline"
+      >
+        Voltar para login
+      </Link>
     </>
   );
 }
