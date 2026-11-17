@@ -1,4 +1,6 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   BotaoLink,
   Cartao,
@@ -7,34 +9,50 @@ import {
   LinkSeta,
   PaginaInterna,
 } from "@/components/PainelUI";
-import { assinaturaDemo, planoPorId } from "@/data/aluno";
-
-export const metadata: Metadata = {
-  title: "Solicitação de cancelamento registrada | RiseFit",
-};
+import { useUsuarioLogado } from "@/lib/sessao";
+import { obterUsuarioAPI, type UsuarioDetalhes } from "@/services/api";
 
 export default function CancelamentoConfirmadoPage() {
-  const plano = planoPorId(assinaturaDemo.planoId);
+  const usuarioSessao = useUsuarioLogado();
+  const [usuario, setUsuario] = useState<UsuarioDetalhes | null>(null);
+
+  useEffect(() => {
+    const id =
+      usuarioSessao?.id ||
+      (typeof window !== "undefined"
+        ? JSON.parse(
+            localStorage.getItem("usuario") ||
+              sessionStorage.getItem("usuario") ||
+              "{}",
+          )?.id
+        : null);
+
+    if (!id) return;
+
+    obterUsuarioAPI(id)
+      .then((dados) => setUsuario(dados))
+      .catch((e) => console.error("Erro ao carregar dados do usuário:", e));
+  }, [usuarioSessao]);
+
+  const planoNome = usuario?.assinaturas?.[0]?.plano?.nome || "Plano RiseFit";
 
   return (
     <PaginaInterna
       voltar={{ href: "/minha-conta", texto: "Minha conta" }}
       titulo="Solicitação de cancelamento registrada"
-      subtitulo="Sua solicitação foi apresentada neste exemplo. Ela não confirma o encerramento imediato do plano."
+      subtitulo="Sua solicitação foi processada no sistema com sucesso."
       largura="estreita"
       centralizado
       icone={<IconeCheck />}
     >
       <Cartao titulo="Resumo da solicitação">
         <dl>
-          <LinhaInfo rotulo="Plano" valor={plano.nome} />
-          <LinhaInfo rotulo="Solicitação" valor="Aguardando análise" />
-          <LinhaInfo rotulo="Encerramento" valor="A confirmar" />
+          <LinhaInfo rotulo="Plano" valor={planoNome} />
+          <LinhaInfo rotulo="Situação" valor="Cancelamento solicitado" />
+          <LinhaInfo rotulo="Acesso restante" valor="Até o término do período faturado" />
         </dl>
         <p className="mt-3 text-sm text-gray-500">
-          Consulte a equipe para verificar as condições e o andamento. A
-          confirmação da solicitação não altera automaticamente o acesso ou a
-          cobrança.
+          Você ainda pode utilizar a plataforma e seus treinos até a data final do ciclo atual.
         </p>
       </Cartao>
 
