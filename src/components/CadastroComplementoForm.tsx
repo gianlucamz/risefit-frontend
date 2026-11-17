@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { AlertaErro } from "./AcessoUI";
+import { cadastrarUsuarioAPI } from "@/services/api";
+import { salvarSessao } from "@/lib/sessao";
 import {
   AvisoPrivacidade,
   BotaoCadastro,
@@ -141,6 +144,7 @@ export default function CadastroComplementoForm({
     nome?: string;
     email?: string;
     celular?: string;
+    senha?: string;
   }>(() => {
     if (typeof window === "undefined") return {};
     try {
@@ -152,6 +156,7 @@ export default function CadastroComplementoForm({
   });
 
   const [erros, setErros] = useState<Record<string, string>>({});
+  const [erroGeral, setErroGeral] = useState("");
   const [carregando, setCarregando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
 
@@ -191,12 +196,46 @@ export default function CadastroComplementoForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErroGeral("");
 
     if (!validar()) return;
 
     setCarregando(true);
 
     try {
+      const dataIso = dataNascimento.includes("/")
+        ? dataNascimento.split("/").reverse().join("-")
+        : dataNascimento;
+
+      const usuarioCriado = await cadastrarUsuarioAPI({
+        nome: dadosEtapa1.nome?.trim() || "Aluno RiseFit",
+        email: dadosEtapa1.email?.trim().toLowerCase() || "",
+        senha: dadosEtapa1.senha || "RiseFit@123",
+        dataNascimento: dataIso,
+        telefone: dadosEtapa1.celular ? dadosEtapa1.celular.replace(/\D/g, "") : "",
+        cpf: cpf.replace(/\D/g, ""),
+        sexo: sexo.trim(),
+        cargo: "ALUNO",
+      });
+
+      const usuarioObj = (
+        usuarioCriado && typeof usuarioCriado === "object"
+          ? usuarioCriado
+          : {}
+      ) as Record<string, unknown>;
+
+      salvarSessao(
+        {
+          id: usuarioObj.id,
+          nome: (usuarioObj.nome as string) || dadosEtapa1.nome,
+          email: (usuarioObj.email as string) || dadosEtapa1.email,
+          cpf: cpf.trim(),
+          cargo: "ALUNO",
+        },
+        undefined,
+        true,
+      );
+
       const payloadFinal = {
         ...dadosEtapa1,
         cpf: cpf.trim(),
@@ -215,10 +254,14 @@ export default function CadastroComplementoForm({
 
       if (aoCompletar) {
         aoCompletar(payloadFinal);
-        setSucesso(true);
-      } else {
-        router.push("/cadastro/endereco");
       }
+      setSucesso(true);
+    } catch (erro) {
+      setErroGeral(
+        erro instanceof Error
+          ? erro.message
+          : "Não foi possível concluir o cadastro. Tente novamente.",
+      );
     } finally {
       setCarregando(false);
     }
@@ -251,8 +294,14 @@ export default function CadastroComplementoForm({
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
               <Link
-                href="/#planos"
+                href="/cadastro/endereco"
                 className="rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#6d28d9]"
+              >
+                Completar Endereço e Pagamento
+              </Link>
+              <Link
+                href="/#planos"
+                className="rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50"
               >
                 Escolher Plano
               </Link>
@@ -318,8 +367,14 @@ export default function CadastroComplementoForm({
               <AvisoPrivacidade />
             </div>
 
+            {erroGeral && (
+              <div className="mt-4">
+                <AlertaErro>{erroGeral}</AlertaErro>
+              </div>
+            )}
+
             <BotaoCadastro carregando={carregando} className="mt-[25px]">
-              Continuar cadastro
+              Concluir cadastro
             </BotaoCadastro>
           </form>
         )}

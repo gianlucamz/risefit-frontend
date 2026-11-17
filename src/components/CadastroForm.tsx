@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { CampoSenha } from "./AcessoUI";
 
 export function formatarTelefone(valor: string): string {
   const digitos = valor.replace(/\D/g, "").slice(0, 11);
@@ -430,11 +431,13 @@ export interface CadastroFormProps {
     nome?: string;
     email?: string;
     celular?: string;
+    senha?: string;
   };
   aoCompletar?: (dados: {
     nome: string;
     email: string;
     celular: string;
+    senha?: string;
   }) => void;
   titulo?: string;
 }
@@ -479,6 +482,17 @@ export default function CadastroForm({
     return "";
   });
 
+  const [senha, setSenha] = useState(() => {
+    if (dadosIniciais?.senha) return dadosIniciais.senha;
+    if (typeof window !== "undefined") {
+      try {
+        const salvo = sessionStorage.getItem("risefit_cadastro_step1");
+        if (salvo) return JSON.parse(salvo).senha || "";
+      } catch {}
+    }
+    return "";
+  });
+
   const [erros, setErros] = useState<Record<string, string>>({});
   const [carregando, setCarregando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
@@ -496,6 +510,12 @@ export default function CadastroForm({
       novosErros.email = "Por favor, informe seu e-mail.";
     } else if (!validarEmail(email.trim())) {
       novosErros.email = "Informe um endereço de e-mail válido.";
+    }
+
+    if (!senha.trim()) {
+      novosErros.senha = "Por favor, crie uma senha.";
+    } else if (senha.length < 8) {
+      novosErros.senha = "A senha deve ter no mínimo 8 caracteres.";
     }
 
     const digitosCelular = celular.replace(/\D/g, "");
@@ -520,6 +540,7 @@ export default function CadastroForm({
       const payload = {
         nome: nome.trim(),
         email: email.trim().toLowerCase(),
+        senha: senha,
         celular: celular.trim(),
       };
 
@@ -595,6 +616,19 @@ export default function CadastroForm({
                     setErros((prev) => ({ ...prev, email: "" }));
                 }}
                 erro={erros.email}
+              />
+
+              <CampoSenha
+                id="senha"
+                rotulo="Senha de acesso"
+                valor={senha}
+                placeholder="Crie uma senha (mínimo 8 caracteres)"
+                autoComplete="new-password"
+                aoMudar={(v) => {
+                  setSenha(v);
+                  if (erros.senha) setErros((prev) => ({ ...prev, senha: "" }));
+                }}
+                erro={erros.senha}
               />
 
               <CampoFormulario

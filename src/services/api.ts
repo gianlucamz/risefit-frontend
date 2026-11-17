@@ -64,12 +64,62 @@ function mensagemErroAPI(dados: unknown, status: number): string {
     if (isRecord(dados)) {
         const mensagem = dados.message ?? dados.error;
         if (typeof mensagem === 'string') return mensagem;
-        if (Array.isArray(mensagem) && mensagem.every((item) => typeof item === 'string')) {
-            return mensagem.join(' ');
+        if (Array.isArray(mensagem)) {
+            const mensagens = mensagem.map((item) => {
+                if (typeof item === 'string') return item;
+                if (isRecord(item) && typeof item.message === 'string') return item.message;
+                return '';
+            }).filter(Boolean);
+            if (mensagens.length > 0) return mensagens.join('. ');
         }
     }
 
+    if (status === 409) return 'Este e-mail ou CPF já está cadastrado.';
+    if (status === 400) return 'Dados inválidos. Verifique as informações preenchidas.';
+    if (status === 401) return 'E-mail ou senha incorretos.';
+
     return `Não foi possível concluir a solicitação (HTTP ${status}).`;
+}
+
+export interface CadastroUsuarioPayload {
+    nome: string;
+    email: string;
+    senha: string;
+    dataNascimento: string;
+    telefone: string;
+    cpf?: string;
+    sexo?: string;
+    cargo?: 'ALUNO' | 'PROFISSIONAL' | 'ADMIN';
+}
+
+export async function cadastrarUsuarioAPI(payload: CadastroUsuarioPayload) {
+    const response = await fetch(`${API_BASE_URL}/users`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const texto = await response.text();
+    let dados: unknown;
+
+    if (texto) {
+        try {
+            dados = JSON.parse(texto);
+        } catch {
+            if (!response.ok) {
+                throw new Error(mensagemErroAPI(undefined, response.status));
+            }
+            throw new Error('O servidor retornou uma resposta inválida.');
+        }
+    }
+
+    if (!response.ok) {
+        throw new Error(mensagemErroAPI(dados, response.status));
+    }
+
+    return isRecord(dados) ? dados : { ...payload };
 }
 
 async function solicitarAuthAPI(

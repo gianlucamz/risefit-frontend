@@ -10,6 +10,7 @@ import {
 } from "@/components/CadastroComplementoForm";
 import PaymentCardModal, { DadosCartao } from "@/components/PaymentCardModal";
 import { processarCheckoutAPI } from "@/services/api";
+import { salvarSessao } from "@/lib/sessao";
 import { useRouter } from "next/navigation";
 
 const ESTADOS_BR = [
@@ -371,12 +372,14 @@ export default function CadastroEnderecoForm() {
 
       await processarCheckoutAPI(payloadFinal);
 
-      localStorage.setItem(
-        "usuario",
-        JSON.stringify({
+      salvarSessao(
+        {
           nome: dadosAnteriores.nome || "",
           email: dadosAnteriores.email || "",
-        }),
+          cpf: dadosAnteriores.cpf || "",
+        },
+        undefined,
+        true,
       );
 
       try {

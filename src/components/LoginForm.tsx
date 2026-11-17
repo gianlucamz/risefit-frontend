@@ -64,7 +64,7 @@ export default function LoginForm() {
         senha === perfilTeste.senha
       ) {
         salvarSessao(perfilTeste.usuario, undefined, lembrar);
-        router.push("/area-aluno");
+        router.push("/");
         return;
       }
 
@@ -73,25 +73,8 @@ export default function LoginForm() {
         senha,
       });
 
-      try {
-        localStorage.removeItem("usuario");
-        localStorage.removeItem("token");
-        sessionStorage.removeItem("usuario");
-        sessionStorage.removeItem("token");
-
-        const armazenamento = lembrar ? localStorage : sessionStorage;
-        armazenamento.setItem("usuario", JSON.stringify(resposta.usuario));
-        if (resposta.token) armazenamento.setItem("token", resposta.token);
-      } catch (erro) {
-        console.error("Não foi possível salvar a sessão no navegador:", erro);
-        setErroGeral(
-          "Não foi possível salvar sua sessão neste navegador. Verifique as permissões de armazenamento e tente novamente.",
-        );
-        return;
-      }
-
-      window.dispatchEvent(new Event("usuario_logado"));
-      router.push("/area-aluno");
+      salvarSessao(resposta.usuario, resposta.token, lembrar);
+      router.push("/");
     } catch (erro) {
       setErroGeral(
         erro instanceof Error ? erro.message : "Não foi possível entrar.",
