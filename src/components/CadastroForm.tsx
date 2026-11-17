@@ -51,12 +51,12 @@ export function BotaoVoltar({
       type="button"
       onClick={handleClick}
       aria-label={ariaLabel}
-      className={`flex h-[43px] w-[43px] shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] border-[#d1d4db] bg-white text-black transition-colors duration-200 hover:border-gray-400 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 active:scale-95 ${className}`}
+      className={`flex h-10.75 w-10.75 shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] border-[#d1d4db] bg-white text-black transition-colors duration-200 hover:border-gray-400 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 active:scale-95 ${className}`}
     >
       <svg
         aria-hidden="true"
         viewBox="0 0 18 16"
-        className="h-4 w-[18px]"
+        className="h-4 w-4.5"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.8"
@@ -78,7 +78,7 @@ export function LogoRiseFit({ className = "" }: { className?: string }) {
       width={180}
       height={60}
       priority
-      className={`block h-[50px] w-[150px] select-none sm:h-[60px] sm:w-[180px] ${className}`}
+      className={`block h-12.5 w-37.5 select-none sm:h-15 sm:w-45 ${className}`}
     />
   );
 }
@@ -116,7 +116,7 @@ export function RotuloCampo({
       htmlFor={htmlFor}
       className={
         compacto
-          ? "mb-[5px] block text-xs leading-4 font-medium text-black"
+          ? "mb-1.25 block text-xs leading-4 font-medium text-black"
           : "mb-2 block text-[15px] leading-5 font-semibold text-dark"
       }
     >
@@ -197,7 +197,7 @@ export function CampoFormulario({
           aria-invalid={Boolean(erro)}
           aria-describedby={erro ? `${id}-erro` : undefined}
           className={`${classesCampo({ erro, compacto, corPlaceholder })} ${
-            icone ? "!pl-[42px]" : ""
+            icone ? "!pl-10.5!" : ""
           }`}
         />
       </div>
@@ -271,11 +271,11 @@ export function CampoSelect({
         <span
           aria-hidden="true"
           className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${
-            compacto ? "right-[15px]" : "right-[21.5px]"
+            compacto ? "right-3.75" : "right-[21.5px]"
           } ${chevron === "escuro" ? "text-dark" : "text-[#9ca3af]"}`}
         >
           {chevron === "escuro" ? (
-            <svg viewBox="0 0 12 6" className="h-[6px] w-3" fill="none">
+            <svg viewBox="0 0 12 6" className="h-1.5 w-3" fill="none">
               <path
                 d="M1.2 1.2 6 4.6l4.8-3.4"
                 stroke="currentColor"
@@ -287,7 +287,7 @@ export function CampoSelect({
           ) : (
             <svg
               viewBox="0 0 10 7"
-              className={compacto ? "h-[6px] w-[9px]" : "h-[7px] w-[10px]"}
+              className={compacto ? "h-1.5 w-2.25" : "h-1.75 w-2.5"}
               fill="none"
             >
               <path
@@ -308,7 +308,7 @@ export function CampoSelect({
 
 export function AvisoPrivacidade() {
   return (
-    <div className="space-y-6 text-[13px] leading-5 text-[#6b7280] sm:text-sm sm:leading-[22px]">
+    <div className="space-y-6 text-[13px] leading-5 text-[#6b7280] sm:text-sm sm:leading-5.5">
       <p>
         Utilizamos seus dados pessoais para o cadastro em nossa plataforma, que
         nos permite lhe prestar nossos serviços. Para mais informações, acesse
@@ -351,7 +351,7 @@ export function BotaoCadastro({
     <button
       type="submit"
       disabled={carregando}
-      className={`flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-brand px-6 text-base font-semibold text-white transition-all duration-200 hover:bg-[#6d28d9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 sm:h-14 sm:text-lg ${className}`}
+      className={`flex h-13 w-full cursor-pointer items-center justify-center rounded-full bg-brand px-6 text-base font-semibold text-white transition-all duration-200 hover:bg-[#6d28d9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 sm:h-14 sm:text-lg ${className}`}
     >
       {carregando ? (
         <span className="flex items-center justify-center gap-2">
@@ -394,7 +394,7 @@ export function TituloCadastro({
 }) {
   return (
     <h1
-      className={`text-center text-[26px] leading-8 font-bold text-dark sm:text-[38px] sm:leading-[46px] ${className}`}
+      className={`text-center text-[26px] leading-8 font-bold text-dark sm:text-[38px] sm:leading-11.5 ${className}`}
     >
       {children}
     </h1>
@@ -418,10 +418,10 @@ export function CabecalhoCadastro({
         ariaLabel={voltarAriaLabel}
         className="absolute top-0 left-0"
       />
-      <TituloCadastro className="px-12 pt-[52px] sm:pt-[5px]">
+      <TituloCadastro className="px-12 pt-13 sm:pt-1.25">
         {titulo}
       </TituloCadastro>
-      <LogoRiseFit className="mx-auto mt-6 sm:mt-[35px]" />
+      <LogoRiseFit className="mx-auto mt-6 sm:mt-8.75" />
     </div>
   );
 }
@@ -587,7 +587,7 @@ export default function CadastroForm({
           </div>
         ) : (
           <form onSubmit={handleSubmit} noValidate>
-            <div className="space-y-[23px]">
+            <div className="space-y-5.75">
               <CampoFormulario
                 id="nome"
                 rotulo="Nome completo"
@@ -648,7 +648,7 @@ export default function CadastroForm({
               />
             </div>
 
-            <div className="mt-[21px] text-center">
+            <div className="mt-5.25 text-center">
               <Link
                 href="/login"
                 className="text-[15px] leading-5 font-medium text-brand underline underline-offset-[3px] transition-colors hover:text-[#6d28d9]"
@@ -657,11 +657,11 @@ export default function CadastroForm({
               </Link>
             </div>
 
-            <div className="mt-[25px]">
+            <div className="mt-6.25">
               <AvisoPrivacidade />
             </div>
 
-            <BotaoCadastro carregando={carregando} className="mt-[25px]">
+            <BotaoCadastro carregando={carregando} className="mt-6.25">
               Continuar cadastro
             </BotaoCadastro>
           </form>

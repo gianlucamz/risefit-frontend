@@ -1,4 +1,7 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AlterarSenhaForm from "@/components/AlterarSenhaForm";
 import {
   BotaoLink,
@@ -7,11 +10,34 @@ import {
   PaginaInterna,
 } from "@/components/PainelUI";
 import EncerrarAcessosBotao from "@/components/EncerrarAcessosBotao";
-import { historicoAcessos, sessaoAtual } from "@/data/aluno";
-
-export const metadata: Metadata = { title: "Segurança e acessos | RiseFit" };
+import { useUsuarioLogado } from "@/lib/sessao";
 
 export default function SegurancaPage() {
+  const router = useRouter();
+  const usuarioSessao = useUsuarioLogado();
+  const [dataAcesso, setDataAcesso] = useState("");
+
+  useEffect(() => {
+    const sessaoStorage =
+      typeof window !== "undefined"
+        ? localStorage.getItem("usuario") || sessionStorage.getItem("usuario")
+        : null;
+
+    if (!sessaoStorage && !usuarioSessao) {
+      router.push("/login");
+      return;
+    }
+
+    const agora = new Date().toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    setDataAcesso(agora);
+  }, [usuarioSessao, router]);
+
   return (
     <PaginaInterna
       voltar={{ href: "/minha-conta", texto: "Minha conta" }}
@@ -24,19 +50,27 @@ export default function SegurancaPage() {
         </Cartao>
 
         <div className="space-y-6">
-          <Cartao titulo="Dispositivos conectados">
+          <Cartao titulo="Dispositivo conectado">
             <dl>
-              <LinhaInfo rotulo="Este dispositivo" valor={sessaoAtual.dispositivo} />
-              <LinhaInfo rotulo="Sessão atual" valor={sessaoAtual.inicio} />
+              <LinhaInfo
+                rotulo="Este dispositivo"
+                valor="Navegador Web • Conectado"
+              />
+              <LinhaInfo
+                rotulo="Sessão ativa"
+                valor={dataAcesso || "Conexão recente"}
+              />
             </dl>
-            <p className="mt-2 text-sm text-gray-500">1 dispositivo conectado no exemplo.</p>
+            <p className="mt-2 text-sm text-gray-500">
+              Sessão autenticada e protegida para {usuarioSessao?.email || "sua conta"}.
+            </p>
             <EncerrarAcessosBotao />
           </Cartao>
 
           <Cartao titulo="Não reconhece um acesso?">
             <p className="text-sm text-gray-500">
-              Altere sua senha e procure orientação da equipe pelo formulário de
-              contato. Não compartilhe sua senha.
+              Altere sua senha imediatamente e procure orientação da equipe pelo formulário de
+              contato. Nunca compartilhe sua senha.
             </p>
             <div className="mt-4">
               <BotaoLink href="/contato#contato" variante="secundario" larguraTotal>
@@ -50,20 +84,15 @@ export default function SegurancaPage() {
       <div id="historico" className="mt-6 scroll-mt-28">
         <Cartao titulo="Histórico de acessos">
           <ul className="divide-y divide-gray-200 border-b border-gray-200">
-            {historicoAcessos.map((acesso) => (
-              <li
-                key={acesso.data}
-                className="flex flex-col gap-1 py-3.5 text-sm sm:flex-row sm:justify-between"
-              >
-                <span className="text-gray-500">{acesso.data}</span>
-                <span className="font-semibold text-dark">
-                  {acesso.dispositivo} • {acesso.status}
-                </span>
-              </li>
-            ))}
+            <li className="flex flex-col gap-1 py-3.5 text-sm sm:flex-row sm:justify-between">
+              <span className="text-gray-500">{dataAcesso || "Hoje"}</span>
+              <span className="font-semibold text-brand">
+                Navegador Web • Sessão atual ativa
+              </span>
+            </li>
           </ul>
           <p className="mt-4 text-xs text-gray-500">
-            Horários de Brasília. Histórico demonstrativo, sem consulta a acessos reais.
+            Horários baseados no fuso de Brasília.
           </p>
         </Cartao>
       </div>

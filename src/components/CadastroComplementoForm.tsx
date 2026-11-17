@@ -226,7 +226,7 @@ export default function CadastroComplementoForm({
 
       salvarSessao(
         {
-          id: usuarioObj.id,
+          id: usuarioObj.id as string | number | undefined,
           nome: (usuarioObj.nome as string) || dadosEtapa1.nome,
           email: (usuarioObj.email as string) || dadosEtapa1.email,
           cpf: cpf.trim(),

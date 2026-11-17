@@ -6,9 +6,12 @@ import { useSyncExternalStore } from "react";
 // localStorage (lembrar acesso) ou no sessionStorage e dispara o evento "usuario_logado".
 
 export type UsuarioSessao = {
+  id?: number | string;
   nome?: string;
   nomeCompleto?: string;
   email?: string;
+  cpf?: string;
+  telefone?: string;
   [campo: string]: unknown;
 };
 
@@ -83,4 +86,32 @@ export function sair() {
     // sem acesso ao armazenamento: nada para apagar
   }
   window.dispatchEvent(new Event(EVENTO));
+}
+
+export function mascararCPF(cpf?: string | null): string {
+  if (!cpf) return "Não informado";
+  const d = cpf.replace(/\D/g, "");
+  if (d.length < 11) return cpf;
+  return `***.***.${d.slice(6, 9)}-**`;
+}
+
+export function formatarTelefoneExibicao(telefone?: string | null): string {
+  if (!telefone) return "";
+  const d = telefone.replace(/\D/g, "");
+  if (d.length === 11) {
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  }
+  if (d.length === 10) {
+    return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  }
+  return telefone;
+}
+
+export function mascararTelefone(telefone?: string | null): string {
+  if (!telefone) return "Não informado";
+  const d = telefone.replace(/\D/g, "");
+  if (d.length >= 10) {
+    return `(${d.slice(0, 2)}) 9****-**${d.slice(-2)}`;
+  }
+  return telefone;
 }

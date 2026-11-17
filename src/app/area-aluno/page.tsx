@@ -1,32 +1,64 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import ListaExercicios from "@/components/ListaExercicios";
 import {
-  assinaturaDemo,
   formatarMoeda,
-  planoPorId,
   resumoSemana,
   treinoDoDia,
 } from "@/data/aluno";
-
-// Página Área do Aluno (src/app/area-aluno/page.tsx)
-// O header e o footer já vêm do layout do site, então aqui ficam só o hero e os cards.
-// O hero usa a imagem public/banneraluno.png (2172x724).
+import { useUsuarioLogado } from "@/lib/sessao";
+import { obterUsuarioAPI, type UsuarioDetalhes } from "@/services/api";
 
 export default function AreaDoAlunoPage() {
-  const planoAtual = planoPorId(assinaturaDemo.planoId);
+  const router = useRouter();
+  const usuarioSessao = useUsuarioLogado();
+  const [usuario, setUsuario] = useState<UsuarioDetalhes | null>(null);
+
+  useEffect(() => {
+    const sessaoStorage =
+      typeof window !== "undefined"
+        ? localStorage.getItem("usuario") || sessionStorage.getItem("usuario")
+        : null;
+
+    if (!sessaoStorage && !usuarioSessao) {
+      router.push("/login");
+      return;
+    }
+
+    const id =
+      usuarioSessao?.id ||
+      (sessaoStorage ? JSON.parse(sessaoStorage).id : null);
+
+    if (!id) return;
+
+    let ativo = true;
+
+    obterUsuarioAPI(id)
+      .then((dados) => {
+        if (ativo) setUsuario(dados);
+      })
+      .catch((e) => console.error("Erro ao carregar dados do aluno:", e));
+
+    return () => {
+      ativo = false;
+    };
+  }, [usuarioSessao, router]);
+
+  const assinatura = usuario?.assinaturas?.[0];
+  const plano = assinatura?.plano;
 
   return (
     <main>
       {/* ============ HERO (banner) ============ */}
       <section className="bg-[#0b0b10] text-white">
-        {/* Largura total da tela, sem bordas laterais.
-            [container-type:inline-size] faz o texto escalar pela largura do banner (cqw). */}
-        <div className="relative w-full [container-type:inline-size]">
+        <div className="relative w-full @container">
           <h1 className="sr-only">Área do Aluno</h1>
 
-          {/* Mesma proporção da imagem: nada é cortado em nenhuma tela */}
-          <div className="relative aspect-[2172/724] w-full">
+          <div className="relative aspect-2172/724 w-full">
             <Image
               src="/banneraluno1.png"
               alt="Academia moderna com esteiras e aparelhos de musculação"
@@ -37,10 +69,6 @@ export default function AreaDoAlunoPage() {
             />
           </div>
 
-          {/* Título: no desktop fica sobre a parte escura, centralizado na vertical.
-              No celular fica abaixo da imagem, para não ficar minúsculo. */}
-          {/* Título: no desktop fica abaixo dos pontos, alinhado à esquerda deles.
-    No celular fica abaixo da imagem. */}
           <div className="px-5 py-8 text-center md:absolute md:left-[50%] md:right-[6%] md:top-[40%] md:p-0 md:text-left">
             <p
               aria-hidden="true"
@@ -48,7 +76,7 @@ export default function AreaDoAlunoPage() {
             >
               Área do
               <br />
-              <span className="text-[#7c3aed]">Aluno</span>
+              <span className="text-brand">Aluno</span>
             </p>
           </div>
         </div>
@@ -56,14 +84,14 @@ export default function AreaDoAlunoPage() {
 
       {/* ============ CARDS ============ */}
       <section className="bg-[#efeff1] px-6 py-10 lg:px-14 lg:py-14">
-        <div className="mx-auto grid max-w-[1440px] gap-6 lg:grid-cols-[1.55fr_1fr]">
+        <div className="mx-auto grid max-w-360 gap-6 lg:grid-cols-[1.55fr_1fr]">
           {/* Meu treino de hoje */}
           <article className="rounded-2xl bg-white p-6 shadow-sm lg:p-8">
             <header className="flex items-center justify-between">
               <h2 className="text-lg font-bold lg:text-xl">Meu treino de hoje</h2>
               <Link
                 href="/area-aluno/treinos"
-                className="inline-flex items-center gap-1 text-sm text-[#7c3aed] hover:underline"
+                className="inline-flex items-center gap-1 text-sm text-brand hover:underline"
               >
                 Ver todos
                 <ArrowRight />
@@ -91,7 +119,7 @@ export default function AreaDoAlunoPage() {
               <h2 className="text-lg font-bold lg:text-xl">Resumo da semana</h2>
               <Link
                 href="/area-aluno/historico"
-                className="inline-flex items-center gap-1 text-sm text-[#7c3aed] hover:underline"
+                className="inline-flex items-center gap-1 text-sm text-brand hover:underline"
               >
                 Ver detalhes
                 <ArrowRight />
@@ -127,21 +155,27 @@ export default function AreaDoAlunoPage() {
         </div>
 
         {/* Meu plano */}
-        <article className="mx-auto mt-6 max-w-[1440px] rounded-2xl bg-white p-6 shadow-sm lg:p-8">
+        <article className="mx-auto mt-6 max-w-360 rounded-2xl bg-white p-6 shadow-sm lg:p-8">
           <h2 className="text-lg font-bold lg:text-xl">Meu plano</h2>
           <dl className="mt-4 space-y-3 text-sm">
             <div className="flex justify-between gap-4">
-              <dt className="text-gray-600">{planoAtual.nome}</dt>
-              <dd className="font-semibold">{formatarMoeda(planoAtual.preco)}/mês</dd>
+              <dt className="text-gray-600">{plano?.nome || "Plano"}</dt>
+              <dd className="font-semibold">
+                {plano?.preco ? `${formatarMoeda(Number(plano.preco))}/mês` : "Nenhum plano ativo"}
+              </dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-gray-600">Situação</dt>
-              <dd className="font-semibold">{assinaturaDemo.situacao}</dd>
+              <dd className="font-semibold">
+                {assinatura?.status === "ATIVA"
+                  ? "Ativo"
+                  : assinatura?.status || "Pendente"}
+              </dd>
             </div>
           </dl>
           <Link
             href="/minha-conta"
-            className="mt-5 inline-flex items-center gap-1 text-sm text-[#7c3aed] hover:underline"
+            className="mt-5 inline-flex items-center gap-1 text-sm text-brand hover:underline"
           >
             Gerenciar minha assinatura
             <ArrowRight />
