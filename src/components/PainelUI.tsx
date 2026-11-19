@@ -52,15 +52,15 @@ export function PaginaInterna({
           <h1
             className={`font-bold tracking-tight text-dark lg:tracking-normal ${
               centralizado
-                ? "text-[28px] leading-[35px] lg:text-[30px] lg:leading-[38px]"
-                : "text-[28px] leading-[35px] lg:text-[38px] lg:leading-[46px]"
+                ? "text-[28px] leading-8.75 lg:text-[30px] lg:leading-9.5"
+                : "text-[28px] leading-8.75 lg:text-[38px] lg:leading-11.5"
             }`}
           >
             {titulo}
           </h1>
           {subtitulo && (
             <p
-              className={`text-[15px] leading-[23px] text-gray-500 sm:text-base sm:leading-6 ${centralizado ? "mt-[19px]" : "mt-3 lg:mt-4"}`}
+              className={`text-[15px] leading-5.75 text-gray-500 sm:text-base sm:leading-6 ${centralizado ? "mt-4.75" : "mt-3 lg:mt-4"}`}
             >
               {subtitulo}
             </p>
@@ -102,7 +102,7 @@ export function Cartao({
           className={`flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4 ${classeCabecalho}`}
         >
           {titulo && (
-            <h2 className="text-[22px] leading-[30px] font-bold text-dark">
+            <h2 className="text-[22px] leading-7.5 font-bold text-dark">
               {titulo}
             </h2>
           )}
@@ -125,7 +125,7 @@ export function LinhaInfo({
   destaque?: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-1.5 py-2.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4 sm:py-[9px]">
+    <div className="flex flex-col gap-1.5 py-2.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4 sm:py-2.25">
       <dt className="text-[13px] text-gray-500 sm:text-sm">{rotulo}</dt>
       <dd
         className={`font-bold sm:text-right ${
@@ -171,7 +171,7 @@ export function CaixaSelecao({
     <input
       type="checkbox"
       {...props}
-      className={`grid h-[18px] w-[18px] shrink-0 cursor-pointer appearance-none place-content-center rounded-[4px] border border-gray-300 bg-white transition-colors before:hidden before:h-2.5 before:w-2.5 before:bg-white before:[clip-path:polygon(14%_44%,0_65%,50%_100%,100%_16%,80%_0%,43%_62%)] checked:border-brand checked:bg-brand checked:before:block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed ${className}`}
+      className={`grid h-4.5 w-4.5 shrink-0 cursor-pointer appearance-none place-content-center rounded-sm border border-gray-300 bg-white transition-colors before:hidden before:h-2.5 before:w-2.5 before:bg-white before:[clip-path:polygon(14%_44%,0_65%,50%_100%,100%_16%,80%_0%,43%_62%)] checked:border-brand checked:bg-brand checked:before:block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed ${className}`}
     />
   );
 }

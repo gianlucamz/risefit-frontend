@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 export default function CadastroEnderecoPage() {
   return (
     <main className="flex justify-center bg-[#ededed]">
-      <div className="w-full max-w-[1240px] bg-white px-4 pt-6 pb-12 sm:px-10 lg:min-h-[976px] lg:pt-[46px]">
-        <div className="mx-auto max-w-[920px]">
+      <div className="w-full max-w-310 bg-white px-4 pt-6 pb-12 sm:px-10 lg:min-h-244 lg:pt-11.5">
+        <div className="mx-auto max-w-230">
           <CadastroEnderecoForm />
         </div>
       </div>

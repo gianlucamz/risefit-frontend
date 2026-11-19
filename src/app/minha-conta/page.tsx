@@ -10,11 +10,7 @@ import {
   Selo,
 } from "@/components/PainelUI";
 import { formatarMoeda } from "@/data/aluno";
-import {
-  useUsuarioLogado,
-  mascararCPF,
-  mascararTelefone,
-} from "@/lib/sessao";
+import { useUsuarioLogado, mascararCPF, mascararTelefone } from "@/lib/sessao";
 import { obterUsuarioAPI, type UsuarioDetalhes } from "@/services/api";
 
 export default function MinhaContaPage() {
@@ -101,11 +97,12 @@ export default function MinhaContaPage() {
     <main className="bg-[#f8f8f8] px-6 py-10 lg:py-14">
       <div className="mx-auto max-w-300">
         <p className="text-sm font-medium text-brand">Minha conta</p>
-        <h1 className="mt-3 text-[28px] leading-[35px] font-bold tracking-tight text-dark lg:text-[44px] lg:leading-normal">
+        <h1 className="mt-3 text-[28px] leading-8.75 font-bold tracking-tight text-dark lg:text-[44px] lg:leading-normal">
           Gerencie sua assinatura e informações
         </h1>
-        <p className="mt-3 text-[15px] leading-[23px] text-gray-500 lg:text-base lg:leading-normal">
-          Acompanhe seu plano, dados pessoais e opções de suporte em um só lugar.
+        <p className="mt-3 text-[15px] leading-5.75 text-gray-500 lg:text-base lg:leading-normal">
+          Acompanhe seu plano, dados pessoais e opções de suporte em um só
+          lugar.
         </p>
 
         {carregando ? (
@@ -137,22 +134,23 @@ export default function MinhaContaPage() {
           </div>
         ) : (
           <div className="mt-8 grid items-start gap-6 lg:grid-cols-2">
-            <Cartao titulo="Conta logada" className="shadow-sm">
+            <Cartao
+              titulo="Conta logada"
+              className="flex h-full flex-col shadow-sm"
+            >
               <dl>
                 <LinhaInfo rotulo="Nome completo" valor={nomeExibicao} />
                 <LinhaInfo rotulo="CPF" valor={cpfExibicao} />
                 <LinhaInfo rotulo="E-mail" valor={emailExibicao} />
                 <LinhaInfo rotulo="Telefone" valor={telefoneExibicao} />
               </dl>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <BotaoLink href="/minha-conta/editar" variante="secundario">
-                  Editar dados
-                </BotaoLink>
+              <div className="mt-auto flex flex-col gap-3 pt-4">
                 <BotaoLink
-                  href="/minha-conta/editar#contato"
+                  href="/minha-conta/editar"
                   variante="secundario"
+                  className="w-full justify-center"
                 >
-                  Atualizar contato
+                  Editar dados
                 </BotaoLink>
               </div>
             </Cartao>
@@ -160,7 +158,7 @@ export default function MinhaContaPage() {
             <Cartao
               titulo="Plano atual"
               acao={<Selo>{situacaoPlano}</Selo>}
-              className="shadow-sm"
+              className="flex h-full flex-col shadow-sm"
             >
               <p className="text-2xl font-semibold text-dark lg:text-3xl">
                 {plano?.nome || "Sem plano ativo"}
@@ -173,22 +171,17 @@ export default function MinhaContaPage() {
                 <LinhaInfo
                   rotulo="Valor mensal"
                   valor={
-                    plano?.preco
-                      ? formatarMoeda(Number(plano.preco))
-                      : "—"
+                    plano?.preco ? formatarMoeda(Number(plano.preco)) : "—"
                   }
                   destaque
                 />
-                <LinhaInfo
-                  rotulo="Próxima cobrança"
-                  valor={dataFimFormatada}
-                />
+                <LinhaInfo rotulo="Próxima cobrança" valor={dataFimFormatada} />
                 <LinhaInfo
                   rotulo="Método"
                   valor={plano ? "Cartão de crédito / débito" : "Nenhum"}
                 />
               </dl>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="mt-auto grid gap-3 pt-4 sm:grid-cols-2">
                 <BotaoLink href="/minha-conta/plano">
                   {plano ? "Alterar plano" : "Escolher plano"}
                 </BotaoLink>
@@ -266,8 +259,8 @@ export default function MinhaContaPage() {
                 Cancelar plano
               </h2>
               <p className="mt-2 max-w-xl text-sm text-gray-500">
-                Você pode consultar as condições antes de confirmar a alteração. O
-                cancelamento não é executado automaticamente nesta página.
+                Você pode consultar as condições antes de confirmar a alteração.
+                O cancelamento não é executado automaticamente nesta página.
               </p>
               <ul className="mt-4 space-y-2 text-sm text-dark">
                 {[
@@ -298,7 +291,10 @@ export default function MinhaContaPage() {
             <div className="rounded-xl bg-gray-100 p-4">
               <h3 className="font-semibold text-dark">Próximos passos</h3>
               <div className="mt-3 flex flex-col gap-3">
-                <BotaoLink href="/politicas/termos-de-uso" variante="secundario">
+                <BotaoLink
+                  href="/politicas/termos-de-uso"
+                  variante="secundario"
+                >
                   Ver condições
                 </BotaoLink>
                 <BotaoLink href="/minha-conta/cancelamento" variante="perigo">
