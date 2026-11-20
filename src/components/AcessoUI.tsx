@@ -12,7 +12,7 @@ export function AcessoLayout({
 }) {
   return (
     <main className="bg-[#f8f9fa] px-6 py-10 lg:py-14">
-      <div className="mx-auto max-w-[900px]">
+      <div className="mx-auto max-w-225">
         <Link
           href="/"
           className="text-xs font-medium text-brand hover:underline"

@@ -157,6 +157,23 @@ export default function CadastroComplementoForm({
   const [erros, setErros] = useState<Record<string, string>>({});
   const [erroGeral, setErroGeral] = useState("");
   const [carregando, setCarregando] = useState(false);
+  const [planoParam] = useState<string>(() => {
+  if (typeof window === "undefined") return "";
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const param = params.get("plano");
+    const salvo = sessionStorage.getItem("risefit_plano_escolhido") || "";
+    const planoDefinido = (param || salvo).toLowerCase();
+
+    if (param) {
+      sessionStorage.setItem("risefit_plano_escolhido", planoDefinido);
+    }
+
+    return planoDefinido;
+  } catch {
+    return "";
+  }
+});
 
   const opcoesSexo: OpcaoSelect[] = [
     { valor: "Feminino", rotulo: "Feminino" },
@@ -253,7 +270,10 @@ export default function CadastroComplementoForm({
       if (aoCompletar) {
         aoCompletar(payloadFinal);
       }
-      router.push("/cadastro/endereco");
+      const queryPlano = planoParam
+        ? `?plano=${encodeURIComponent(planoParam)}`
+        : "";
+      router.push(`/cadastro/endereco${queryPlano}`);
     } catch (erro) {
       setErroGeral(
         erro instanceof Error
@@ -269,20 +289,20 @@ export default function CadastroComplementoForm({
     <div className="w-full">
       <div className="relative">
         <BotaoVoltar
-          href="/cadastro"
+          href={`/cadastro${planoParam ? `?plano=${encodeURIComponent(planoParam)}` : ""}`}
           ariaLabel="Voltar para a primeira etapa"
           className="absolute top-0 left-0"
         />
-        <LogoRiseFit className="mx-auto pt-[52px] sm:mt-[2px] sm:pt-0" />
+        <LogoRiseFit className="mx-auto pt-13 sm:mt-0.5 sm:pt-0" />
       </div>
 
-      <TituloCadastro className="mt-6 sm:mt-[35px]">
+      <TituloCadastro className="mt-6 sm:mt-8.75">
         Só faltam mais algumas informações
       </TituloCadastro>
 
       <div className="mt-8 sm:mt-9">
         <form onSubmit={handleSubmit} noValidate>
-          <div className="space-y-[23px]">
+          <div className="space-y-5.75">
             <CampoFormulario
               id="cpf"
               rotulo="CPF"
@@ -330,7 +350,7 @@ export default function CadastroComplementoForm({
             />
           </div>
 
-          <div className="mt-[22px]">
+          <div className="mt-5.5">
             <AvisoPrivacidade />
           </div>
 
@@ -340,7 +360,7 @@ export default function CadastroComplementoForm({
             </div>
           )}
 
-          <BotaoCadastro carregando={carregando} className="mt-[25px]">
+          <BotaoCadastro carregando={carregando} className="mt-6.25">
             Continuar para endereço e cobrança
           </BotaoCadastro>
         </form>

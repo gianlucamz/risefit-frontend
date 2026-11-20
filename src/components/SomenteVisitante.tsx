@@ -21,8 +21,13 @@ export function LinkAssinarPlano({
 }) {
   const usuario = useUsuarioLogado();
   const href = usuario ? "/minha-conta/plano" : `/cadastro?plano=${plano}`;
+  const handleClick = () => {
+    try {
+      sessionStorage.setItem("risefit_plano_escolhido", plano);
+    } catch {}
+  };
   return (
-    <Link href={href} className={className}>
+    <Link href={href} onClick={handleClick} className={className}>
       {children}
     </Link>
   );

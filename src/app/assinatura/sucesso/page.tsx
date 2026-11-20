@@ -8,12 +8,29 @@ import {
   LinkSeta,
   PaginaInterna,
 } from "@/components/PainelUI";
-import { assinaturaDemo, formatarMoeda, planoPorId } from "@/data/aluno";
+import {
+  assinaturaDemo,
+  formatarMoeda,
+  planoPorId,
+  planosConta,
+  type PlanoId,
+} from "@/data/aluno";
 
 export const metadata: Metadata = { title: "Cadastro concluído | RiseFit" };
 
-export default function AssinaturaSucessoPage() {
-  const plano = planoPorId(assinaturaDemo.planoId);
+export default async function AssinaturaSucessoPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ plano?: string }>;
+}) {
+  const params = searchParams ? await searchParams : undefined;
+  const planoKey = (params?.plano as PlanoId) || assinaturaDemo.planoId;
+  const plano =
+    planosConta.find(
+      (p) =>
+        p.id === planoKey ||
+        p.nome.toLowerCase() === String(planoKey).toLowerCase(),
+    ) || planoPorId(assinaturaDemo.planoId);
 
   return (
     <PaginaInterna

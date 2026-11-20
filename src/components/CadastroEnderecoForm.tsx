@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BotaoVoltar,
   LogoRiseFit,
@@ -9,7 +9,11 @@ import {
   CampoSelect,
 } from "@/components/CadastroComplementoForm";
 import PaymentCardModal, { DadosCartao } from "@/components/PaymentCardModal";
-import { processarCheckoutAPI } from "@/services/api";
+import {
+  processarCheckoutAPI,
+  obterPlanosAPI,
+  criarAssinaturaAPI,
+} from "@/services/api";
 import { salvarSessao } from "@/lib/sessao";
 import { useRouter } from "next/navigation";
 
@@ -243,6 +247,248 @@ function CheckboxTermos({ marcado, aoMudar, erro }: CheckboxTermosProps) {
   );
 }
 
+export interface InfoPlanoVisual {
+  id: number | string;
+  slug: string;
+  nome: string;
+  preco: number;
+  precoFormatado: string;
+  descricao: string;
+  beneficios: string[];
+  destaque?: boolean;
+}
+
+const BENEFICIOS_POR_PLANO: Record<
+  string,
+  { descricao: string; beneficios: string[]; destaque?: boolean }
+> = {
+  essencial: {
+    descricao: "O plano ideal para quem está começando e quer cuidar da saúde.",
+    beneficios: [
+      "Acesso à musculação",
+      "Aulas de grupo (horários limitados)",
+      "Avaliação física inicial",
+      "Acompanhamento básico",
+      "Uso do vestiário",
+    ],
+  },
+  personalizado: {
+    descricao: "O plano completo para quem busca resultados com acompanhamento.",
+    beneficios: [
+      "Tudo do plano Essencial",
+      "Treino personalizado",
+      "Acompanhamento de profissionais",
+      "Avaliação física periódica",
+      "Suporte nutricional (avaliação inicial)",
+    ],
+    destaque: true,
+  },
+  premium: {
+    descricao: "A experiência completa para quem busca o máximo de resultado.",
+    beneficios: [
+      "Tudo do plano Personalizado",
+      "Acompanhamento nutricional completo",
+      "Consultas com especialistas",
+      "Acesso liberado a todas as unidades",
+      "Prioridade em horários",
+    ],
+  },
+};
+
+const PLANOS_PADRAO: InfoPlanoVisual[] = [
+  {
+    id: 1,
+    slug: "essencial",
+    nome: "Essencial",
+    preco: 99.9,
+    precoFormatado: "R$ 99,90/mês",
+    descricao: BENEFICIOS_POR_PLANO.essencial.descricao,
+    beneficios: BENEFICIOS_POR_PLANO.essencial.beneficios,
+  },
+  {
+    id: 2,
+    slug: "personalizado",
+    nome: "Personalizado",
+    preco: 139.9,
+    precoFormatado: "R$ 139,90/mês",
+    descricao: BENEFICIOS_POR_PLANO.personalizado.descricao,
+    beneficios: BENEFICIOS_POR_PLANO.personalizado.beneficios,
+    destaque: true,
+  },
+  {
+    id: 3,
+    slug: "premium",
+    nome: "Premium",
+    preco: 159.9,
+    precoFormatado: "R$ 159,90/mês",
+    descricao: BENEFICIOS_POR_PLANO.premium.descricao,
+    beneficios: BENEFICIOS_POR_PLANO.premium.beneficios,
+  },
+];
+
+interface CardPlanoProps {
+  plano: InfoPlanoVisual;
+  selecionado: boolean;
+  infoAberta: boolean;
+  aoSelecionar: () => void;
+  aoAlternarInfo: (e: React.MouseEvent) => void;
+  aoFecharInfo: () => void;
+}
+
+function CardPlano({
+  plano,
+  selecionado,
+  infoAberta,
+  aoSelecionar,
+  aoAlternarInfo,
+  aoFecharInfo,
+}: CardPlanoProps) {
+  return (
+    <div className="relative">
+      <div
+        role="radio"
+        aria-checked={selecionado}
+        tabIndex={0}
+        onClick={aoSelecionar}
+        onKeyDown={(e) => {
+          if (e.key === " " || e.key === "Enter") {
+            e.preventDefault();
+            aoSelecionar();
+          }
+        }}
+        className={`w-full rounded-lg border-2 p-4 text-left transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 ${
+          selecionado
+            ? "border-brand bg-brand/5 shadow-xs"
+            : "border-gray-200 bg-white hover:border-gray-300"
+        }`}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm sm:text-base font-bold text-gray-900">
+                {plano.nome}
+              </span>
+              {plano.destaque && (
+                <span className="rounded-full bg-brand/10 px-2.5 py-0.5 text-[11px] font-semibold text-brand">
+                  Mais escolhido
+                </span>
+              )}
+            </div>
+            <p className="mt-0.5 text-xs sm:text-sm font-semibold text-brand">
+              {plano.precoFormatado}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            {/* Botão de info (i) discreto */}
+            <button
+              type="button"
+              onClick={aoAlternarInfo}
+              aria-label={`Ver benefícios do plano ${plano.nome}`}
+              title="Ver benefícios"
+              className={`flex h-7 w-7 items-center justify-center rounded-full border transition-all cursor-pointer ${
+                infoAberta
+                  ? "border-brand bg-brand text-white shadow-xs"
+                  : "border-gray-300 bg-gray-50 text-gray-600 hover:border-brand hover:text-brand hover:bg-white"
+              }`}
+            >
+              <svg
+                className="h-3.5 w-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+            </button>
+
+            {/* Indicador de seleção de rádio */}
+            <div
+              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                selecionado ? "border-brand" : "border-gray-300"
+              }`}
+            >
+              {selecionado && <div className="h-2.5 w-2.5 rounded-full bg-brand" />}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Caixinha explicativa de benefícios (popover / card compacto) */}
+      {infoAberta && (
+        <div
+          role="region"
+          aria-label={`Benefícios do plano ${plano.nome}`}
+          className="mt-2 rounded-xl border border-brand/20 bg-gradient-to-b from-[#faf8ff] to-[#f5f0ff] p-4 text-left shadow-md transition-all duration-200"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-start justify-between gap-3 border-b border-brand/10 pb-2.5">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-brand">
+                Benefícios inclusos
+              </span>
+              <h4 className="text-sm font-bold text-gray-900">
+                Plano {plano.nome}
+              </h4>
+              <p className="mt-0.5 text-xs text-gray-600 leading-relaxed">
+                {plano.descricao}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={aoFecharInfo}
+              className="rounded-lg p-1 text-gray-400 hover:bg-black/5 hover:text-gray-700 transition-colors cursor-pointer"
+              aria-label="Fechar detalhes do plano"
+            >
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          <ul className="mt-3 space-y-2">
+            {plano.beneficios.map((beneficio) => (
+              <li
+                key={beneficio}
+                className="flex items-start gap-2.5 text-xs sm:text-[13px] text-gray-800"
+              >
+                <svg
+                  className="h-4 w-4 text-brand shrink-0 mt-0.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span className="leading-tight">{beneficio}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CadastroEnderecoForm() {
   const router = useRouter();
 
@@ -262,6 +508,27 @@ export default function CadastroEnderecoForm() {
   const [carregando, setCarregando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
+
+  /* ── Estados do plano ── */
+  const [planos] = useState<InfoPlanoVisual[]>(PLANOS_PADRAO);
+  const [planoSelecionado, setPlanoSelecionado] = useState<string>(() => {
+    if (typeof window === "undefined") return PLANOS_PADRAO[0].slug;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const planoParam =
+        params.get("plano") ||
+        sessionStorage.getItem("risefit_plano_escolhido") ||
+        "";
+      const encontrado = PLANOS_PADRAO.find(
+        (p) =>
+          p.slug === planoParam.toLowerCase() ||
+          p.nome.toLowerCase() === planoParam.toLowerCase(),
+      );
+      if (encontrado) return encontrado.slug;
+    } catch {}
+    return [...PLANOS_PADRAO].sort((a, b) => a.preco - b.preco)[0].slug;
+  });
+  const [infoPlanoAberto, setInfoPlanoAberto] = useState<string | null>(null);
 
   const [dadosAnteriores] = useState<Record<string, string>>(() => {
     if (typeof window === "undefined") return {};
@@ -321,6 +588,10 @@ export default function CadastroEnderecoForm() {
 
     if (!formaPagamento) {
       novosErros.formaPagamento = "Selecione uma forma de pagamento.";
+    }
+
+    if (!planoSelecionado) {
+      novosErros.plano = "Selecione um plano para continuar.";
     }
 
     if (!aceitouTermos) {
@@ -399,15 +670,29 @@ export default function CadastroEnderecoForm() {
         true,
       );
 
+      /* ── Criar assinatura no backend ── */
+      const planoEscolhido = planos.find((p) => p.slug === planoSelecionado);
+      if (planoEscolhido && resObj.usuarioId) {
+        try {
+          await criarAssinaturaAPI({
+            usuarioId: Number(resObj.usuarioId),
+            planoId: Number(planoEscolhido.id),
+          });
+        } catch {
+          // Assinatura é best-effort; não bloqueia o checkout
+        }
+      }
+
       try {
         sessionStorage.removeItem("risefit_cadastro_step1");
         sessionStorage.removeItem("risefit_cadastro_completo");
         sessionStorage.removeItem("risefit_cadastro_final");
+        sessionStorage.setItem("risefit_plano_escolhido", planoSelecionado);
       } catch {}
 
       setSucesso(true);
       setTimeout(() => {
-        router.push("/assinatura/sucesso");
+        router.push(`/assinatura/sucesso?plano=${encodeURIComponent(planoSelecionado)}`);
       }, 1200);
     } catch (error: unknown) {
       const mensagem =
@@ -490,6 +775,45 @@ export default function CadastroEnderecoForm() {
           </div>
         ) : (
           <form onSubmit={handleSubmitForm} noValidate className="space-y-8">
+            {/* ── Escolha do Plano ── */}
+            <section>
+              <h2 className="text-base sm:text-lg font-bold text-gray-900">
+                Escolha seu plano
+              </h2>
+              <div
+                className="mt-4 space-y-3"
+                role="radiogroup"
+                aria-label="Plano"
+              >
+                {planos.map((plano) => (
+                  <CardPlano
+                    key={plano.slug}
+                    plano={plano}
+                    selecionado={planoSelecionado === plano.slug}
+                    infoAberta={infoPlanoAberto === plano.slug}
+                    aoSelecionar={() => {
+                      setPlanoSelecionado(plano.slug);
+                      if (erros.plano)
+                        setErros((prev) => ({ ...prev, plano: "" }));
+                    }}
+                    aoAlternarInfo={(e) => {
+                      e.stopPropagation();
+                      setInfoPlanoAberto((prev) =>
+                        prev === plano.slug ? null : plano.slug,
+                      );
+                    }}
+                    aoFecharInfo={() => setInfoPlanoAberto(null)}
+                  />
+                ))}
+              </div>
+              {erros.plano && (
+                <p className="mt-2 text-xs text-red-600 font-medium">
+                  {erros.plano}
+                </p>
+              )}
+            </section>
+
+            {/* ── Endereço de Cobrança ── */}
             <section>
               <h2 className="text-base sm:text-lg font-bold text-gray-900">
                 Qual seu endereço de cobrança?
