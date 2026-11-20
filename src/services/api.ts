@@ -297,6 +297,17 @@ export async function obterPlanosAPI(): Promise<PlanoDetalhes[]> {
     return solicitarAPI<PlanoDetalhes[]>('/plans', { method: 'GET' });
 }
 
+export async function criarAssinaturaAPI(dados: {
+    usuarioId: number;
+    planoId: number;
+    status?: string;
+}): Promise<AssinaturaDetalhes> {
+    return solicitarAPI<AssinaturaDetalhes>('/subscriptions', {
+        method: 'POST',
+        body: JSON.stringify(dados),
+    });
+}
+
 export async function obterAssinaturasAPI(usuarioId: number | string): Promise<AssinaturaDetalhes[]> {
     return solicitarAPI<AssinaturaDetalhes[]>(`/subscriptions?usuarioId=${usuarioId}`, { method: 'GET' });
 }

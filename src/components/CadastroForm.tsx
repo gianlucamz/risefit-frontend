@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CampoSenha } from "./AcessoUI";
 
 export function formatarTelefone(valor: string): string {
@@ -497,6 +497,17 @@ export default function CadastroForm({
   const [carregando, setCarregando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const planoParam = params.get("plano");
+      if (planoParam) {
+        sessionStorage.setItem("risefit_plano_escolhido", planoParam.toLowerCase());
+      }
+    } catch {}
+  }, []);
+
   const validar = (): boolean => {
     const novosErros: Record<string, string> = {};
 
@@ -551,11 +562,20 @@ export default function CadastroForm({
         );
       } catch {}
 
+      const planoEscolhido =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("plano") ||
+            sessionStorage.getItem("risefit_plano_escolhido")
+          : null;
+      const queryPlano = planoEscolhido
+        ? `?plano=${encodeURIComponent(planoEscolhido)}`
+        : "";
+
       if (aoCompletar) {
         aoCompletar(payload);
         setSucesso(true);
       } else {
-        router.push("/cadastro/complemento");
+        router.push(`/cadastro/complemento${queryPlano}`);
       }
     } finally {
       setCarregando(false);

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AlertaErro } from "./AcessoUI";
@@ -158,7 +157,23 @@ export default function CadastroComplementoForm({
   const [erros, setErros] = useState<Record<string, string>>({});
   const [erroGeral, setErroGeral] = useState("");
   const [carregando, setCarregando] = useState(false);
-  const [sucesso, setSucesso] = useState(false);
+  const [planoParam] = useState<string>(() => {
+  if (typeof window === "undefined") return "";
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const param = params.get("plano");
+    const salvo = sessionStorage.getItem("risefit_plano_escolhido") || "";
+    const planoDefinido = (param || salvo).toLowerCase();
+
+    if (param) {
+      sessionStorage.setItem("risefit_plano_escolhido", planoDefinido);
+    }
+
+    return planoDefinido;
+  } catch {
+    return "";
+  }
+});
 
   const opcoesSexo: OpcaoSelect[] = [
     { valor: "Feminino", rotulo: "Feminino" },
@@ -255,7 +270,10 @@ export default function CadastroComplementoForm({
       if (aoCompletar) {
         aoCompletar(payloadFinal);
       }
-      setSucesso(true);
+      const queryPlano = planoParam
+        ? `?plano=${encodeURIComponent(planoParam)}`
+        : "";
+      router.push(`/cadastro/endereco${queryPlano}`);
     } catch (erro) {
       setErroGeral(
         erro instanceof Error
@@ -271,113 +289,81 @@ export default function CadastroComplementoForm({
     <div className="w-full">
       <div className="relative">
         <BotaoVoltar
-          href="/cadastro"
+          href={`/cadastro${planoParam ? `?plano=${encodeURIComponent(planoParam)}` : ""}`}
           ariaLabel="Voltar para a primeira etapa"
           className="absolute top-0 left-0"
         />
-        <LogoRiseFit className="mx-auto pt-[52px] sm:mt-[2px] sm:pt-0" />
+        <LogoRiseFit className="mx-auto pt-13 sm:mt-0.5 sm:pt-0" />
       </div>
 
-      <TituloCadastro className="mt-6 sm:mt-[35px]">
+      <TituloCadastro className="mt-6 sm:mt-8.75">
         Só faltam mais algumas informações
       </TituloCadastro>
 
       <div className="mt-8 sm:mt-9">
-        {sucesso ? (
-          <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-center">
-            <h3 className="text-lg font-bold text-green-900">
-              Cadastro finalizado com sucesso!
-            </h3>
-            <p className="mt-1 text-sm text-green-700">
-              Parabéns{dadosEtapa1.nome ? `, ${dadosEtapa1.nome}` : ""}! Seus
-              dados foram cadastrados e você já pode escolher o seu plano.
-            </p>
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/cadastro/endereco"
-                className="rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#6d28d9]"
-              >
-                Completar Endereço e Pagamento
-              </Link>
-              <Link
-                href="/#planos"
-                className="rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50"
-              >
-                Escolher Plano
-              </Link>
-              <Link
-                href="/area-aluno"
-                className="rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50"
-              >
-                Área do Aluno
-              </Link>
-            </div>
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="space-y-5.75">
+            <CampoFormulario
+              id="cpf"
+              rotulo="CPF"
+              tipo="text"
+              valor={cpf}
+              placeholder="Digite seu CPF"
+              autoComplete="off"
+              inputMode="numeric"
+              aoMudar={(v) => {
+                setCpf(formatarCPF(v));
+                if (erros.cpf) setErros((prev) => ({ ...prev, cpf: "" }));
+              }}
+              erro={erros.cpf}
+            />
+
+            <CampoSelect
+              id="sexo"
+              rotulo="Sexo"
+              valor={sexo}
+              placeholder="Toque para escolher"
+              opcoes={opcoesSexo}
+              chevron="escuro"
+              aoMudar={(v) => {
+                setSexo(v);
+                if (erros.sexo) setErros((prev) => ({ ...prev, sexo: "" }));
+              }}
+              erro={erros.sexo}
+            />
+
+            <CampoFormulario
+              id="dataNascimento"
+              rotulo="Data de nascimento"
+              tipo="text"
+              valor={dataNascimento}
+              placeholder="DD/MM/AAAA"
+              autoComplete="bday"
+              inputMode="numeric"
+              aoMudar={(v) => {
+                setDataNascimento(formatarData(v));
+                if (erros.dataNascimento) {
+                  setErros((prev) => ({ ...prev, dataNascimento: "" }));
+                }
+              }}
+              erro={erros.dataNascimento}
+            />
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} noValidate>
-            <div className="space-y-[23px]">
-              <CampoFormulario
-                id="cpf"
-                rotulo="CPF"
-                tipo="text"
-                valor={cpf}
-                placeholder="Digite seu CPF"
-                autoComplete="off"
-                inputMode="numeric"
-                aoMudar={(v) => {
-                  setCpf(formatarCPF(v));
-                  if (erros.cpf) setErros((prev) => ({ ...prev, cpf: "" }));
-                }}
-                erro={erros.cpf}
-              />
 
-              <CampoSelect
-                id="sexo"
-                rotulo="Sexo"
-                valor={sexo}
-                placeholder="Toque para escolher"
-                opcoes={opcoesSexo}
-                chevron="escuro"
-                aoMudar={(v) => {
-                  setSexo(v);
-                  if (erros.sexo) setErros((prev) => ({ ...prev, sexo: "" }));
-                }}
-                erro={erros.sexo}
-              />
+          <div className="mt-5.5">
+            <AvisoPrivacidade />
+          </div>
 
-              <CampoFormulario
-                id="dataNascimento"
-                rotulo="Data de nascimento"
-                tipo="text"
-                valor={dataNascimento}
-                placeholder="DD/MM/AAAA"
-                autoComplete="bday"
-                inputMode="numeric"
-                aoMudar={(v) => {
-                  setDataNascimento(formatarData(v));
-                  if (erros.dataNascimento) {
-                    setErros((prev) => ({ ...prev, dataNascimento: "" }));
-                  }
-                }}
-                erro={erros.dataNascimento}
-              />
+          {erroGeral && (
+            <div className="mt-4">
+              <AlertaErro>{erroGeral}</AlertaErro>
             </div>
+          )}
 
-            <div className="mt-[22px]">
-              <AvisoPrivacidade />
-            </div>
-
-            {erroGeral && (
-              <div className="mt-4">
-                <AlertaErro>{erroGeral}</AlertaErro>
-              </div>
-            )}
-
-            <BotaoCadastro carregando={carregando} className="mt-[25px]">
-              Concluir cadastro
-            </BotaoCadastro>
-          </form>
-        )}
+          <BotaoCadastro carregando={carregando} className="mt-6.25">
+            Continuar para endereço e cobrança
+          </BotaoCadastro>
+        </form>
       </div>
     </div>
   );
