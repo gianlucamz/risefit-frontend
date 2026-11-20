@@ -17,9 +17,9 @@ export default function AssinaturaSucessoPage() {
 
   return (
     <PaginaInterna
-      voltar={{ href: "/minha-conta", texto: "Assinatura" }}
+      voltar={{ href: "/", texto: "Início" }}
       titulo="Tudo certo com seu cadastro!"
-      subtitulo="No exemplo, seu pagamento foi aprovado e seu plano está ativo. Você já pode conhecer a Área do Aluno."
+      subtitulo="Seu cadastro foi realizado e seu pagamento foi aprovado com sucesso. Seu plano já está ativo e você tem acesso completo à RiseFit."
       largura="estreita"
       centralizado
       icone={<IconeCheck />}
@@ -37,13 +37,17 @@ export default function AssinaturaSucessoPage() {
         </dl>
       </Cartao>
 
-      <div className="mt-6">
+      <div className="mt-6 flex flex-col gap-3">
         <BotaoLink href="/area-aluno" larguraTotal>
           Acessar Área do Aluno
         </BotaoLink>
+        <BotaoLink href="/minha-conta" variante="secundario" larguraTotal>
+          Ver minha conta
+        </BotaoLink>
       </div>
-      <div className="mt-6">
-        <LinkSeta href="/minha-conta">Ver minha conta</LinkSeta>
+      <div className="mt-6 flex items-center justify-center gap-6 text-sm">
+        <LinkSeta href="/#planos">Ver Planos</LinkSeta>
+        <LinkSeta href="/">Página Inicial</LinkSeta>
       </div>
     </PaginaInterna>
   );

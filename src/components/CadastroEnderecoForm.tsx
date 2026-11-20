@@ -268,7 +268,11 @@ export default function CadastroEnderecoForm() {
     try {
       const step1 = sessionStorage.getItem("risefit_cadastro_step1");
       const step2 = sessionStorage.getItem("risefit_cadastro_completo");
+      const sessaoUsuario =
+        localStorage.getItem("usuario") ?? sessionStorage.getItem("usuario");
+      const usuarioObj = sessaoUsuario ? JSON.parse(sessaoUsuario) : {};
       return {
+        ...usuarioObj,
         ...(step1 ? JSON.parse(step1) : {}),
         ...(step2 ? JSON.parse(step2) : {}),
       };
@@ -351,10 +355,16 @@ export default function CadastroEnderecoForm() {
           email: dadosAnteriores.email || "",
           senha: dadosAnteriores.senha || "RiseFit@123",
           dataNascimento: dadosAnteriores.dataNascimento
-            ? dadosAnteriores.dataNascimento.split("/").reverse().join("-")
+            ? dadosAnteriores.dataNascimento.includes("/")
+              ? dadosAnteriores.dataNascimento.split("/").reverse().join("-")
+              : dadosAnteriores.dataNascimento
             : "2000-01-01",
-          telefone: dadosAnteriores.celular?.replace(/\D/g, "") || "",
-          cpf: dadosAnteriores.cpf?.replace(/\D/g, "") || "",
+          telefone: (
+            dadosAnteriores.celular ||
+            dadosAnteriores.telefone ||
+            ""
+          ).replace(/\D/g, ""),
+          cpf: (dadosAnteriores.cpf || "").replace(/\D/g, ""),
           sexo: dadosAnteriores.sexo || "Não informado",
         },
         endereco: {
@@ -370,13 +380,20 @@ export default function CadastroEnderecoForm() {
         pagamento: pagamentoTokenizado,
       };
 
-      await processarCheckoutAPI(payloadFinal);
+      const respostaCheckout = await processarCheckoutAPI(payloadFinal);
+      const resObj = (
+        respostaCheckout && typeof respostaCheckout === "object"
+          ? respostaCheckout
+          : {}
+      ) as Record<string, unknown>;
 
       salvarSessao(
         {
+          id: (resObj.usuarioId as number | string | undefined) || dadosAnteriores.id,
           nome: dadosAnteriores.nome || "",
           email: dadosAnteriores.email || "",
           cpf: dadosAnteriores.cpf || "",
+          cargo: "ALUNO",
         },
         undefined,
         true,
@@ -390,8 +407,8 @@ export default function CadastroEnderecoForm() {
 
       setSucesso(true);
       setTimeout(() => {
-        router.push("/area-aluno");
-      }, 1500);
+        router.push("/assinatura/sucesso");
+      }, 1200);
     } catch (error: unknown) {
       const mensagem =
         error instanceof Error ? error.message : "Erro ao finalizar cadastro.";
@@ -452,16 +469,22 @@ export default function CadastroEnderecoForm() {
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
               <Link
-                href="/#planos"
+                href="/assinatura/sucesso"
                 className="rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#6d28d9] transition-colors"
               >
-                Ver Planos
+                Concluir Cadastro
               </Link>
               <Link
                 href="/area-aluno"
                 className="rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition-colors"
               >
                 Área do Aluno
+              </Link>
+              <Link
+                href="/#planos"
+                className="rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition-colors"
+              >
+                Ver Planos
               </Link>
             </div>
           </div>
