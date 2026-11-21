@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   BotaoVoltar,
   LogoRiseFit,
@@ -9,12 +9,6 @@ import {
   CampoSelect,
 } from "@/components/CadastroComplementoForm";
 import PaymentCardModal, { DadosCartao } from "@/components/PaymentCardModal";
-import {
-  processarCheckoutAPI,
-  obterPlanosAPI,
-  criarAssinaturaAPI,
-} from "@/services/api";
-import { salvarSessao } from "@/lib/sessao";
 import { useRouter } from "next/navigation";
 
 const ESTADOS_BR = [
@@ -273,7 +267,8 @@ const BENEFICIOS_POR_PLANO: Record<
     ],
   },
   personalizado: {
-    descricao: "O plano completo para quem busca resultados com acompanhamento.",
+    descricao:
+      "O plano completo para quem busca resultados com acompanhamento.",
     beneficios: [
       "Tudo do plano Essencial",
       "Treino personalizado",
@@ -408,24 +403,24 @@ function CardPlano({
               </svg>
             </button>
 
-            {/* Indicador de seleção de rádio */}
             <div
               className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                 selecionado ? "border-brand" : "border-gray-300"
               }`}
             >
-              {selecionado && <div className="h-2.5 w-2.5 rounded-full bg-brand" />}
+              {selecionado && (
+                <div className="h-2.5 w-2.5 rounded-full bg-brand" />
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Caixinha explicativa de benefícios (popover / card compacto) */}
       {infoAberta && (
         <div
           role="region"
           aria-label={`Benefícios do plano ${plano.nome}`}
-          className="mt-2 rounded-xl border border-brand/20 bg-gradient-to-b from-[#faf8ff] to-[#f5f0ff] p-4 text-left shadow-md transition-all duration-200"
+          className="mt-2 rounded-xl border border-brand/20 bg-linear-to-b from-[#faf8ff] to-[#f5f0ff] p-4 text-left shadow-md transition-all duration-200"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-start justify-between gap-3 border-b border-brand/10 pb-2.5">
@@ -492,21 +487,59 @@ function CardPlano({
 export default function CadastroEnderecoForm() {
   const router = useRouter();
 
-  const [cep, setCep] = useState("");
-  const [estado, setEstado] = useState("");
-  const [cidade, setCidade] = useState("");
-  const [bairro, setBairro] = useState("");
-  const [rua, setRua] = useState("");
-  const [numero, setNumero] = useState("");
-  const [complemento, setComplemento] = useState("");
+  const [dadosPendenteSalvo] = useState<{
+    endereco?: {
+      cep?: string;
+      estado?: string;
+      cidade?: string;
+      bairro?: string;
+      rua?: string;
+      numero?: string;
+      complemento?: string;
+    };
+    formaPagamento?: "credito" | "debito" | "";
+    planoSlug?: string;
+  } | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const salvo = sessionStorage.getItem("risefit_cadastro_pendente");
+      return salvo ? JSON.parse(salvo) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [cep, setCep] = useState(() =>
+    dadosPendenteSalvo?.endereco?.cep
+      ? formatarCEP(dadosPendenteSalvo.endereco.cep)
+      : "",
+  );
+  const [estado, setEstado] = useState(
+    () => dadosPendenteSalvo?.endereco?.estado || "",
+  );
+  const [cidade, setCidade] = useState(
+    () => dadosPendenteSalvo?.endereco?.cidade || "",
+  );
+  const [bairro, setBairro] = useState(
+    () => dadosPendenteSalvo?.endereco?.bairro || "",
+  );
+  const [rua, setRua] = useState(() => dadosPendenteSalvo?.endereco?.rua || "");
+  const [numero, setNumero] = useState(
+    () => dadosPendenteSalvo?.endereco?.numero || "",
+  );
+  const [complemento, setComplemento] = useState(
+    () => dadosPendenteSalvo?.endereco?.complemento || "",
+  );
   const [formaPagamento, setFormaPagamento] = useState<
     "credito" | "debito" | ""
-  >("");
+  >(() => dadosPendenteSalvo?.formaPagamento || "");
 
-  const [aceitouTermos, setAceitouTermos] = useState(false);
+  const [aceitouTermos, setAceitouTermos] = useState(() =>
+    Boolean(dadosPendenteSalvo),
+  );
   const [erros, setErros] = useState<Record<string, string>>({});
   const [carregando, setCarregando] = useState(false);
-  const [sucesso, setSucesso] = useState(false);
+  const [sucesso] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
 
   /* ── Estados do plano ── */
@@ -517,6 +550,7 @@ export default function CadastroEnderecoForm() {
       const params = new URLSearchParams(window.location.search);
       const planoParam =
         params.get("plano") ||
+        dadosPendenteSalvo?.planoSlug ||
         sessionStorage.getItem("risefit_plano_escolhido") ||
         "";
       const encontrado = PLANOS_PADRAO.find(
@@ -609,7 +643,7 @@ export default function CadastroEnderecoForm() {
     setModalAberto(true);
   };
 
-  const handleConfirmarModal = async (dadosCartao: DadosCartao) => {
+  const handleConfirmarModal = (dadosCartao: DadosCartao) => {
     setModalAberto(false);
     setCarregando(true);
 
@@ -620,7 +654,9 @@ export default function CadastroEnderecoForm() {
         ultimosDigitos: dadosCartao.numeroCartao.replace(/\s/g, "").slice(-4),
       };
 
-      const payloadFinal = {
+      const planoEscolhido = planos.find((p) => p.slug === planoSelecionado);
+
+      const payloadPendente = {
         usuario: {
           nome: dadosAnteriores.nome || "",
           email: dadosAnteriores.email || "",
@@ -649,55 +685,27 @@ export default function CadastroEnderecoForm() {
         },
         formaPagamento: formaPagamento as "credito" | "debito",
         pagamento: pagamentoTokenizado,
+        planoId: planoEscolhido?.id ?? 1,
+        planoSlug: planoSelecionado,
+        planoNome: planoEscolhido?.nome ?? "Personalizado",
+        planoPreco: planoEscolhido?.preco ?? 139.9,
+        planoPrecoFormatado: planoEscolhido?.precoFormatado ?? "R$ 139,90/mês",
+        planoDescricao:
+          planoEscolhido?.descricao ??
+          "Acompanhamento mensal com suporte completo para seu treino.",
       };
 
-      const respostaCheckout = await processarCheckoutAPI(payloadFinal);
-      const resObj = (
-        respostaCheckout && typeof respostaCheckout === "object"
-          ? respostaCheckout
-          : {}
-      ) as Record<string, unknown>;
-
-      salvarSessao(
-        {
-          id: (resObj.usuarioId as number | string | undefined) || dadosAnteriores.id,
-          nome: dadosAnteriores.nome || "",
-          email: dadosAnteriores.email || "",
-          cpf: dadosAnteriores.cpf || "",
-          cargo: "ALUNO",
-        },
-        undefined,
-        true,
+      sessionStorage.setItem(
+        "risefit_cadastro_pendente",
+        JSON.stringify(payloadPendente),
       );
+      sessionStorage.setItem("risefit_plano_escolhido", planoSelecionado);
 
-      /* ── Criar assinatura no backend ── */
-      const planoEscolhido = planos.find((p) => p.slug === planoSelecionado);
-      if (planoEscolhido && resObj.usuarioId) {
-        try {
-          await criarAssinaturaAPI({
-            usuarioId: Number(resObj.usuarioId),
-            planoId: Number(planoEscolhido.id),
-          });
-        } catch {
-          // Assinatura é best-effort; não bloqueia o checkout
-        }
-      }
-
-      try {
-        sessionStorage.removeItem("risefit_cadastro_step1");
-        sessionStorage.removeItem("risefit_cadastro_completo");
-        sessionStorage.removeItem("risefit_cadastro_final");
-        sessionStorage.setItem("risefit_plano_escolhido", planoSelecionado);
-      } catch {}
-
-      setSucesso(true);
-      setTimeout(() => {
-        router.push(`/assinatura/sucesso?plano=${encodeURIComponent(planoSelecionado)}`);
-      }, 1200);
-    } catch (error: unknown) {
-      const mensagem =
-        error instanceof Error ? error.message : "Erro ao finalizar cadastro.";
-      alert(mensagem);
+      router.push(
+        `/cadastro/concluido?plano=${encodeURIComponent(planoSelecionado)}`,
+      );
+    } catch {
+      alert("Não foi possível prosseguir para a confirmação. Tente novamente.");
     } finally {
       setCarregando(false);
     }
@@ -754,7 +762,7 @@ export default function CadastroEnderecoForm() {
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
               <Link
-                href="/assinatura/sucesso"
+                href="/cadastro/concluido"
                 className="rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#6d28d9] transition-colors"
               >
                 Concluir Cadastro
@@ -775,7 +783,6 @@ export default function CadastroEnderecoForm() {
           </div>
         ) : (
           <form onSubmit={handleSubmitForm} noValidate className="space-y-8">
-            {/* ── Escolha do Plano ── */}
             <section>
               <h2 className="text-base sm:text-lg font-bold text-gray-900">
                 Escolha seu plano
@@ -813,7 +820,6 @@ export default function CadastroEnderecoForm() {
               )}
             </section>
 
-            {/* ── Endereço de Cobrança ── */}
             <section>
               <h2 className="text-base sm:text-lg font-bold text-gray-900">
                 Qual seu endereço de cobrança?
