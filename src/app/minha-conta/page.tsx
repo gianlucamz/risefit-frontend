@@ -17,26 +17,32 @@ export default function MinhaContaPage() {
   const router = useRouter();
   const usuarioSessao = useUsuarioLogado();
   const [usuario, setUsuario] = useState<UsuarioDetalhes | null>(null);
-  const [carregando, setCarregando] = useState(true);
+  const [idCarregado, setIdCarregado] = useState<string | number | null>(null);
+
+  const sessaoStorage =
+    typeof window !== "undefined"
+      ? localStorage.getItem("usuario") || sessionStorage.getItem("usuario")
+      : null;
+
+  let usuarioIdStorage: string | number | null = null;
+  if (sessaoStorage) {
+    try {
+      usuarioIdStorage = JSON.parse(sessaoStorage).id ?? null;
+    } catch {
+      usuarioIdStorage = null;
+    }
+  }
+
+  const usuarioId = usuarioSessao?.id ?? usuarioIdStorage;
+  const carregando = Boolean(usuarioId && idCarregado !== usuarioId);
 
   useEffect(() => {
-    // Verifica se há sessão
-    const sessaoStorage =
-      typeof window !== "undefined"
-        ? localStorage.getItem("usuario") || sessionStorage.getItem("usuario")
-        : null;
-
     if (!sessaoStorage && !usuarioSessao) {
       router.push("/login");
       return;
     }
 
-    const usuarioId =
-      usuarioSessao?.id ||
-      (sessaoStorage ? JSON.parse(sessaoStorage).id : null);
-
     if (!usuarioId) {
-      setCarregando(false);
       return;
     }
 
@@ -44,7 +50,7 @@ export default function MinhaContaPage() {
 
     async function carregarDados() {
       try {
-        const dados = await obterUsuarioAPI(usuarioId);
+        const dados = await obterUsuarioAPI(usuarioId!);
         if (ativo) {
           setUsuario(dados);
         }
@@ -52,7 +58,7 @@ export default function MinhaContaPage() {
         console.error("Erro ao carregar dados do usuário:", erro);
       } finally {
         if (ativo) {
-          setCarregando(false);
+          setIdCarregado(usuarioId);
         }
       }
     }
@@ -62,7 +68,7 @@ export default function MinhaContaPage() {
     return () => {
       ativo = false;
     };
-  }, [usuarioSessao, router]);
+  }, [usuarioId, sessaoStorage, usuarioSessao, router]);
 
   const nomeExibicao =
     usuario?.nome ||
@@ -77,13 +83,38 @@ export default function MinhaContaPage() {
     usuario?.telefone || (usuarioSessao?.telefone as string),
   );
 
-  const assinaturaAtiva = usuario?.assinaturas?.[0];
-  const plano = assinaturaAtiva?.plano;
+  const assinaturasDisponiveis =
+    usuario?.assinaturas && usuario.assinaturas.length > 0
+      ? usuario.assinaturas
+      : (usuarioSessao?.assinaturas as UsuarioDetalhes["assinaturas"]) || [];
+
+  const assinaturaAtiva =
+    assinaturasDisponiveis.find((a) => a.status === "ATIVA") ||
+    assinaturasDisponiveis[0] ||
+    null;
+
+  const plano =
+    assinaturaAtiva?.plano ||
+    (usuarioSessao?.plano as
+      | {
+          id: number;
+          nome: string;
+          descricao?: string | null;
+          preco: string | number;
+          duracaoMeses?: number;
+        }
+      | undefined) ||
+    null;
 
   const situacaoPlano =
     assinaturaAtiva?.status === "ATIVA"
       ? "Ativo"
-      : assinaturaAtiva?.status || "Sem plano";
+      : assinaturaAtiva?.status
+        ? assinaturaAtiva.status.charAt(0).toUpperCase() +
+          assinaturaAtiva.status.slice(1).toLowerCase()
+        : plano
+          ? "Ativo"
+          : "Sem plano";
 
   const dataFimFormatada = assinaturaAtiva?.dataFim
     ? new Date(assinaturaAtiva.dataFim).toLocaleDateString("pt-BR", {
@@ -247,7 +278,6 @@ export default function MinhaContaPage() {
           </div>
         )}
 
-        {/* Cancelar plano */}
         {assinaturaAtiva && (
           <section className="mt-6 grid gap-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:grid-cols-[1fr_240px] lg:p-7">
             <div>

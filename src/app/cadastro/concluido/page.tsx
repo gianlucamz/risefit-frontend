@@ -7,7 +7,9 @@ import { IconeCheck } from "@/components/PainelUI";
 import {
   processarCheckoutAPI,
   criarAssinaturaAPI,
+  obterPlanosAPI,
   type CheckoutPayload,
+  type AssinaturaDetalhes,
 } from "@/services/api";
 import { salvarSessao } from "@/lib/sessao";
 
@@ -152,20 +154,66 @@ function CadastroConcluidoConteudo() {
         (resObj.usuarioId as number | string | undefined) ||
         pendente.usuario?.id;
 
-      // 2. Registra a assinatura do plano
+      // 2. Registra a assinatura ativa do plano
       const idPlanoParaAssinar = pendente.planoId || plano.id;
-      if (usuarioId && idPlanoParaAssinar) {
+      let planoIdFinal = Number(idPlanoParaAssinar);
+
+      try {
+        const planosApi = await obterPlanosAPI();
+        if (Array.isArray(planosApi) && planosApi.length > 0) {
+          const slug = (pendente.planoSlug || plano.slug || "").toLowerCase();
+          const nome = (pendente.planoNome || plano.nome || "").toLowerCase();
+          const encontrado =
+            planosApi.find((p) => p.id === planoIdFinal) ||
+            planosApi.find(
+              (p) =>
+                p.nome.toLowerCase().includes(slug) ||
+                p.nome.toLowerCase().includes(nome),
+            );
+          if (encontrado) {
+            planoIdFinal = encontrado.id;
+          } else {
+            const idx =
+              slug === "essencial" ? 0 : slug === "personalizado" ? 1 : 2;
+            planoIdFinal = (planosApi[idx] || planosApi[0]).id;
+          }
+        }
+      } catch {
+        // Usa planoIdFinal direto se a listagem falhar
+      }
+
+      let assinaturaCriada: AssinaturaDetalhes | null = null;
+      if (usuarioId && planoIdFinal) {
         try {
-          await criarAssinaturaAPI({
+          assinaturaCriada = await criarAssinaturaAPI({
             usuarioId: Number(usuarioId),
-            planoId: Number(idPlanoParaAssinar),
+            planoId: Number(planoIdFinal),
+            status: "ATIVA",
           });
-        } catch {
-          // Assinatura é best-effort; não interrompe caso já tenha sido registrada
+        } catch (errAssinatura) {
+          console.warn("Aviso ao vincular assinatura ativa:", errAssinatura);
         }
       }
 
-      // 3. Salva sessão autenticada no navegador
+      // 3. Salva sessão autenticada no navegador com os dados do plano e assinatura
+      const dadosPlano = {
+        id: planoIdFinal,
+        nome: pendente.planoNome || plano.nome,
+        descricao: pendente.planoDescricao || plano.descricao,
+        preco: pendente.planoPreco || plano.preco,
+        duracaoMeses: 1,
+      };
+
+      const dadosAssinatura = {
+        id: assinaturaCriada?.id || 1,
+        usuarioId: Number(usuarioId),
+        planoId: planoIdFinal,
+        dataInicio: new Date().toISOString(),
+        dataFim: null,
+        status: "ATIVA",
+        plano: dadosPlano,
+      };
+
       salvarSessao(
         {
           id: usuarioId,
@@ -173,6 +221,8 @@ function CadastroConcluidoConteudo() {
           email: pendente.usuario?.email || "",
           cpf: pendente.usuario?.cpf || "",
           cargo: "ALUNO",
+          assinaturas: [dadosAssinatura],
+          plano: dadosPlano,
         },
         undefined,
         true,

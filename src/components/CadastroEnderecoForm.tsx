@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BotaoVoltar,
   LogoRiseFit,
@@ -10,6 +10,7 @@ import {
 } from "@/components/CadastroComplementoForm";
 import PaymentCardModal, { DadosCartao } from "@/components/PaymentCardModal";
 import { useRouter } from "next/navigation";
+import { obterPlanosAPI } from "@/services/api";
 
 const ESTADOS_BR = [
   { valor: "AC", rotulo: "Acre" },
@@ -543,7 +544,31 @@ export default function CadastroEnderecoForm() {
   const [modalAberto, setModalAberto] = useState(false);
 
   /* ── Estados do plano ── */
-  const [planos] = useState<InfoPlanoVisual[]>(PLANOS_PADRAO);
+  const [planos, setPlanos] = useState<InfoPlanoVisual[]>(PLANOS_PADRAO);
+
+  useEffect(() => {
+    let ativo = true;
+    obterPlanosAPI()
+      .then((planosApi) => {
+        if (!ativo || !Array.isArray(planosApi) || planosApi.length === 0)
+          return;
+        setPlanos((prev) =>
+          prev.map((p, idx) => {
+            const encontrado =
+              planosApi.find(
+                (ap) =>
+                  ap.nome.toLowerCase().includes(p.slug) ||
+                  ap.nome.toLowerCase().includes(p.nome.toLowerCase()),
+              ) || planosApi[idx];
+            return encontrado ? { ...p, id: encontrado.id } : p;
+          }),
+        );
+      })
+      .catch(() => {});
+    return () => {
+      ativo = false;
+    };
+  }, []);
   const [planoSelecionado, setPlanoSelecionado] = useState<string>(() => {
     if (typeof window === "undefined") return PLANOS_PADRAO[0].slug;
     try {
