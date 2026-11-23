@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { AlertaErro, AlertaSucesso } from "./AcessoUI";
 import { Botao, BotaoLink, Cartao, Divisor, LinhaInfo } from "./PainelUI";
@@ -10,11 +10,12 @@ import {
   obterPlanosAPI,
   atualizarAssinaturaAPI,
   criarAssinaturaAPI,
-  atualizarUsuarioAPI,
   type PlanoDetalhes,
   type UsuarioDetalhes,
 } from "@/services/api";
 import { salvarSessao, useUsuarioLogado } from "@/lib/sessao";
+
+const subscribeVazio = () => () => {};
 
 export default function AlterarPlano() {
   const router = useRouter();
@@ -24,41 +25,61 @@ export default function AlterarPlano() {
     { id: number | string; nome: string; preco: number; descricao: string }[]
   >([]);
   const [usuario, setUsuario] = useState<UsuarioDetalhes | null>(null);
-  const [planoAtualId, setPlanoAtualId] = useState<number | string | null>(null);
+  const [planoAtualId, setPlanoAtualId] = useState<number | string | null>(
+    null,
+  );
   const [selecionado, setSelecionado] = useState<number | string | null>(null);
+  const [idCarregado, setIdCarregado] = useState<string | number | null>(null);
 
   const [ciente, setCiente] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
   const [erro, setErro] = useState("");
-  const [carregando, setCarregando] = useState(true);
+
+  const montado = useSyncExternalStore(
+    subscribeVazio,
+    () => true,
+    () => false,
+  );
+
+  let sessaoId: string | number | null = null;
+  if (montado) {
+    const raw =
+      localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
+    if (raw) {
+      try {
+        sessaoId = JSON.parse(raw).id ?? null;
+      } catch {
+        sessaoId = null;
+      }
+    }
+  }
+
+  const usuarioId = montado ? (usuarioSessao?.id ?? sessaoId) : null;
+  const carregando =
+    !montado || Boolean(usuarioId && idCarregado !== usuarioId);
 
   useEffect(() => {
-    const sessaoStorage =
-      typeof window !== "undefined"
-        ? localStorage.getItem("usuario") || sessionStorage.getItem("usuario")
-        : null;
+    if (!montado) return;
 
-    if (!sessaoStorage && !usuarioSessao) {
+    const temSessao =
+      Boolean(usuarioId) ||
+      Boolean(localStorage.getItem("usuario")) ||
+      Boolean(sessionStorage.getItem("usuario"));
+
+    if (!temSessao) {
       router.push("/login");
       return;
     }
 
-    const id =
-      usuarioSessao?.id ||
-      (sessaoStorage ? JSON.parse(sessaoStorage).id : null);
-
-    if (!id) {
-      setCarregando(false);
-      return;
-    }
+    if (!usuarioId) return;
 
     let ativo = true;
 
     async function inicializar() {
       try {
         const [dadosUsuario, dadosPlanos] = await Promise.allSettled([
-          obterUsuarioAPI(id),
+          obterUsuarioAPI(usuarioId!),
           obterPlanosAPI(),
         ]);
 
@@ -89,27 +110,26 @@ export default function AlterarPlano() {
         }
 
         setPlanos(listaPlanos);
+        setSelecionado(null);
 
         if (dadosUsuario.status === "fulfilled") {
           setUsuario(dadosUsuario.value);
-          const assinatura = dadosUsuario.value.assinaturas?.[0];
-          const idAtual = assinatura?.planoId ?? listaPlanos[0]?.id;
-          setPlanoAtualId(idAtual);
-          const proximo =
-            listaPlanos.find((p) => p.id !== idAtual)?.id ?? idAtual;
-          setSelecionado(proximo);
+          const assinaturaAtiva = dadosUsuario.value.assinaturas?.find(
+            (a) => a.status === "ATIVA",
+          );
+          setPlanoAtualId(assinaturaAtiva?.planoId ?? null);
         } else {
-          setPlanoAtualId(listaPlanos[0]?.id ?? null);
-          setSelecionado(listaPlanos[1]?.id ?? listaPlanos[0]?.id ?? null);
+          setPlanoAtualId(null);
         }
       } catch (err) {
         console.error("Erro ao carregar planos:", err);
+        if (!ativo) return;
         setPlanos(planosConta);
-        setPlanoAtualId(planosConta[0].id);
-        setSelecionado(planosConta[1].id);
+        setPlanoAtualId(null);
+        setSelecionado(null);
       } finally {
         if (ativo) {
-          setCarregando(false);
+          setIdCarregado(usuarioId);
         }
       }
     }
@@ -119,14 +139,19 @@ export default function AlterarPlano() {
     return () => {
       ativo = false;
     };
-  }, [usuarioSessao, router]);
+  }, [montado, usuarioId, router]);
 
   const planoAtual =
-    planos.find((p) => String(p.id) === String(planoAtualId)) || planos[0];
+    planoAtualId !== null
+      ? planos.find((p) => String(p.id) === String(planoAtualId)) || null
+      : null;
   const novoPlano =
-    planos.find((p) => String(p.id) === String(selecionado)) || planoAtual;
+    selecionado !== null
+      ? planos.find((p) => String(p.id) === String(selecionado)) || null
+      : null;
   const mudou =
-    novoPlano && planoAtual && String(novoPlano.id) !== String(planoAtual.id);
+    Boolean(novoPlano) &&
+    (!planoAtual || String(novoPlano!.id) !== String(planoAtual.id));
 
   function escolher(id: number | string) {
     setSelecionado(id);
@@ -135,23 +160,58 @@ export default function AlterarPlano() {
   }
 
   async function handleConfirmarMudanca() {
-    if (!novoPlano || !mudou) return;
+    if (!novoPlano || !mudou || salvando) return;
 
     setSalvando(true);
     setSucesso(false);
     setErro("");
 
     try {
-      const assinatura = usuario?.assinaturas?.[0];
+      const idFinal = Number(usuario?.id ?? usuarioId);
 
-      if (assinatura && typeof novoPlano.id === "number") {
-        await atualizarAssinaturaAPI(assinatura.id, {
-          planoId: novoPlano.id,
+      if (!idFinal) {
+        throw new Error("Usuário não identificado. Faça login novamente.");
+      }
+
+      const planoIdNumerico = Number(novoPlano.id);
+      const assinaturaAtiva = usuario?.assinaturas?.find(
+        (a) => a.status === "ATIVA",
+      );
+
+      if (assinaturaAtiva) {
+        await atualizarAssinaturaAPI(assinaturaAtiva.id, {
+          planoId: planoIdNumerico,
+          status: "ATIVA",
+        });
+      } else {
+        await criarAssinaturaAPI({
+          usuarioId: idFinal,
+          planoId: planoIdNumerico,
+          status: "ATIVA",
         });
       }
 
-      setPlanoAtualId(novoPlano.id);
+      const dadosAtualizados = await obterUsuarioAPI(idFinal);
+      setUsuario(dadosAtualizados);
+      setPlanoAtualId(planoIdNumerico);
+      setSelecionado(null);
+
+      const persistir = Boolean(localStorage.getItem("usuario"));
+      salvarSessao(
+        {
+          ...(usuarioSessao || {}),
+          ...dadosAtualizados,
+          cpf: dadosAtualizados.cpf ?? undefined,
+          sexo: dadosAtualizados.sexo ?? undefined,
+          plano: undefined,
+          planoId: undefined,
+        },
+        undefined,
+        persistir,
+      );
+
       setSucesso(true);
+      setCiente(false);
     } catch (e) {
       setErro(
         e instanceof Error
@@ -198,16 +258,15 @@ export default function AlterarPlano() {
     <>
       <div className="grid items-start gap-6 md:grid-cols-3">
         {planos.map((plano) => {
-          const ehAtual = String(plano.id) === String(planoAtualId);
+          const ehAtual =
+            planoAtualId !== null && String(plano.id) === String(planoAtualId);
           const ehSelecionado =
-            String(plano.id) === String(selecionado) && !ehAtual;
+            selecionado !== null &&
+            String(plano.id) === String(selecionado) &&
+            !ehAtual;
 
           return (
-            <Cartao
-              key={plano.id}
-              titulo={plano.nome}
-              destaque={ehSelecionado}
-            >
+            <Cartao key={plano.id} titulo={plano.nome} destaque={ehSelecionado}>
               <p className="text-[26px] font-semibold text-brand sm:text-2xl">
                 {formatarMoeda(plano.preco)}/mês
               </p>
@@ -251,7 +310,7 @@ export default function AlterarPlano() {
             <p className="text-gray-500">Seu plano atual</p>
             <dl>
               <LinhaInfo
-                rotulo={planoAtual ? planoAtual.nome : "Nenhum"}
+                rotulo={planoAtual ? planoAtual.nome : "Sem plano ativo"}
                 valor={
                   planoAtual ? `${formatarMoeda(planoAtual.preco)}/mês` : "—"
                 }
@@ -281,7 +340,9 @@ export default function AlterarPlano() {
           />
         </dl>
         <p className="mt-3 text-sm text-gray-500">
-          A alteração do plano entrará em vigor imediatamente para o seu usuário.
+          {planoAtual
+            ? "A alteração do plano entrará em vigor imediatamente para o seu usuário."
+            : "A contratação do plano entrará em vigor imediatamente para o seu usuário."}
         </p>
         <label className="mt-4 flex cursor-pointer items-center gap-3 text-sm text-gray-500">
           <input
@@ -290,7 +351,9 @@ export default function AlterarPlano() {
             onChange={(e) => setCiente(e.target.checked)}
             className="h-4 w-4 cursor-pointer accent-brand"
           />
-          Estou ciente da mudança para o plano selecionado.
+          {planoAtual
+            ? "Estou ciente da mudança para o plano selecionado."
+            : "Estou ciente da contratação do plano selecionado."}
         </label>
 
         {erro && (
@@ -302,7 +365,9 @@ export default function AlterarPlano() {
         {sucesso && (
           <div className="mt-4">
             <AlertaSucesso>
-              Seu plano foi alterado para {novoPlano?.nome} com sucesso!
+              {planoAtual
+                ? `Seu plano foi atualizado para ${planoAtual.nome} com sucesso!`
+                : "Plano contratado com sucesso!"}
             </AlertaSucesso>
           </div>
         )}
@@ -312,10 +377,14 @@ export default function AlterarPlano() {
             disabled={!ciente || !mudou || salvando}
             onClick={handleConfirmarMudanca}
           >
-            {salvando ? "Alterando plano..." : "Confirmar alteração de plano"}
+            {salvando
+              ? "Processando..."
+              : planoAtual
+                ? "Confirmar alteração de plano"
+                : "Confirmar contratação do plano"}
           </Botao>
           <BotaoLink href="/minha-conta" variante="secundario">
-            Manter plano atual
+            Voltar para minha conta
           </BotaoLink>
         </div>
       </Cartao>

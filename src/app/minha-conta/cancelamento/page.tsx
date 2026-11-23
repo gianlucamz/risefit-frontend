@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import CancelamentoForm from "@/components/CancelamentoForm";
 import {
@@ -14,37 +14,57 @@ import { formatarMoeda } from "@/data/aluno";
 import { useUsuarioLogado } from "@/lib/sessao";
 import { obterUsuarioAPI, type UsuarioDetalhes } from "@/services/api";
 
+const subscribeVazio = () => () => {};
+
 export default function CancelamentoPage() {
   const router = useRouter();
   const usuarioSessao = useUsuarioLogado();
   const [usuario, setUsuario] = useState<UsuarioDetalhes | null>(null);
-  const [carregando, setCarregando] = useState(true);
+  const [idCarregado, setIdCarregado] = useState<string | number | null>(null);
+
+  const montado = useSyncExternalStore(
+    subscribeVazio,
+    () => true,
+    () => false,
+  );
+
+  let sessaoId: string | number | null = null;
+  if (montado) {
+    const raw =
+      localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
+    if (raw) {
+      try {
+        sessaoId = JSON.parse(raw).id ?? null;
+      } catch {
+        sessaoId = null;
+      }
+    }
+  }
+
+  const usuarioId = montado ? (usuarioSessao?.id ?? sessaoId) : null;
+  const carregando =
+    !montado || Boolean(usuarioId && idCarregado !== usuarioId);
 
   useEffect(() => {
-    const sessaoStorage =
-      typeof window !== "undefined"
-        ? localStorage.getItem("usuario") || sessionStorage.getItem("usuario")
-        : null;
+    if (!montado) return;
 
-    if (!sessaoStorage && !usuarioSessao) {
+    const temSessao =
+      Boolean(usuarioId) ||
+      Boolean(localStorage.getItem("usuario")) ||
+      Boolean(sessionStorage.getItem("usuario"));
+
+    if (!temSessao) {
       router.push("/login");
       return;
     }
 
-    const id =
-      usuarioSessao?.id ||
-      (sessaoStorage ? JSON.parse(sessaoStorage).id : null);
-
-    if (!id) {
-      setCarregando(false);
-      return;
-    }
+    if (!usuarioId) return;
 
     let ativo = true;
 
     async function carregar() {
       try {
-        const dados = await obterUsuarioAPI(id);
+        const dados = await obterUsuarioAPI(usuarioId!);
         if (ativo) {
           setUsuario(dados);
         }
@@ -52,7 +72,7 @@ export default function CancelamentoPage() {
         console.error("Erro ao carregar dados do usuário:", e);
       } finally {
         if (ativo) {
-          setCarregando(false);
+          setIdCarregado(usuarioId);
         }
       }
     }
@@ -62,10 +82,11 @@ export default function CancelamentoPage() {
     return () => {
       ativo = false;
     };
-  }, [usuarioSessao, router]);
+  }, [montado, usuarioId, router]);
 
-  const assinatura = usuario?.assinaturas?.[0];
-  const plano = assinatura?.plano;
+  const assinaturaAtiva =
+    usuario?.assinaturas?.find((a) => a.status === "ATIVA") || null;
+  const plano = assinaturaAtiva?.plano || null;
 
   return (
     <PaginaInterna
@@ -76,34 +97,47 @@ export default function CancelamentoPage() {
     >
       <Cartao titulo="Plano a ser revisado">
         {carregando ? (
-          <p className="text-sm text-gray-500 py-4">Carregando informações do plano...</p>
+          <p className="py-4 text-sm text-gray-500">
+            Carregando informações do plano...
+          </p>
         ) : (
           <>
             <dl>
-              <LinhaInfo rotulo="Plano atual" valor={plano?.nome || "Sem plano ativo"} />
+              <LinhaInfo
+                rotulo="Plano atual"
+                valor={plano?.nome || "Sem plano ativo"}
+              />
               <LinhaInfo
                 rotulo="Mensalidade"
-                valor={plano ? `${formatarMoeda(Number(plano.preco))}/mês` : "—"}
+                valor={
+                  plano ? `${formatarMoeda(Number(plano.preco))}/mês` : "—"
+                }
               />
               <LinhaInfo
                 rotulo="Situação atual"
-                valor={assinatura?.status || "Nenhuma assinatura ativa"}
+                valor={assinaturaAtiva ? "Ativo" : "Nenhuma assinatura ativa"}
               />
             </dl>
             <Divisor />
-            <p className="text-gray-500 text-sm">
-              Ao confirmar, seu plano será marcado para cancelamento ao fim do ciclo atual.
+            <p className="text-sm text-gray-500">
+              Ao confirmar, sua assinatura ativa será encerrada imediatamente e
+              você ficará sem plano vinculado.
             </p>
             <dl className="mt-2">
               <LinhaInfo
                 rotulo="Data de encerramento"
                 valor={
-                  assinatura?.dataFim
-                    ? new Date(assinatura.dataFim).toLocaleDateString("pt-BR")
-                    : "Fim do período vigente"
+                  assinaturaAtiva?.dataFim
+                    ? new Date(assinaturaAtiva.dataFim).toLocaleDateString(
+                        "pt-BR",
+                      )
+                    : "Imediato após confirmação"
                 }
               />
-              <LinhaInfo rotulo="Condições aplicáveis" valor="Cancelamento sem multas" />
+              <LinhaInfo
+                rotulo="Condições aplicáveis"
+                valor="Cancelamento sem multas"
+              />
             </dl>
             <div className="mt-3">
               <LinkSeta href="/politicas/termos-de-uso">
@@ -114,7 +148,10 @@ export default function CancelamentoPage() {
         )}
       </Cartao>
 
-      <CancelamentoForm assinaturaId={assinatura?.id} />
+      <CancelamentoForm
+        assinaturaId={assinaturaAtiva?.id}
+        usuarioId={usuarioId ?? undefined}
+      />
     </PaginaInterna>
   );
 }

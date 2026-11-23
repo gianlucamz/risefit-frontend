@@ -154,7 +154,7 @@ export function Selo({
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
-        tom === "alerta" ? "bg-red-50 text-red-600" : "bg-gray-100 text-gray-600"
+        tom === "alerta" ? "text-red-600" : "bg-gray-100 text-gray-600"
       }`}
     >
       {children}
