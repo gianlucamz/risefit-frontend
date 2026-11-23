@@ -3,8 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AlertaErro } from "./AcessoUI";
-import { cadastrarUsuarioAPI } from "@/services/api";
-import { salvarSessao } from "@/lib/sessao";
 import {
   AvisoPrivacidade,
   BotaoCadastro,
@@ -209,7 +207,7 @@ export default function CadastroComplementoForm({
     return Object.keys(novosErros).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErroGeral("");
 
@@ -218,39 +216,6 @@ export default function CadastroComplementoForm({
     setCarregando(true);
 
     try {
-      const dataIso = dataNascimento.includes("/")
-        ? dataNascimento.split("/").reverse().join("-")
-        : dataNascimento;
-
-      const usuarioCriado = await cadastrarUsuarioAPI({
-        nome: dadosEtapa1.nome?.trim() || "Aluno RiseFit",
-        email: dadosEtapa1.email?.trim().toLowerCase() || "",
-        senha: dadosEtapa1.senha || "RiseFit@123",
-        dataNascimento: dataIso,
-        telefone: dadosEtapa1.celular ? dadosEtapa1.celular.replace(/\D/g, "") : "",
-        cpf: cpf.replace(/\D/g, ""),
-        sexo: sexo.trim(),
-        cargo: "ALUNO",
-      });
-
-      const usuarioObj = (
-        usuarioCriado && typeof usuarioCriado === "object"
-          ? usuarioCriado
-          : {}
-      ) as Record<string, unknown>;
-
-      salvarSessao(
-        {
-          id: usuarioObj.id as string | number | undefined,
-          nome: (usuarioObj.nome as string) || dadosEtapa1.nome,
-          email: (usuarioObj.email as string) || dadosEtapa1.email,
-          cpf: cpf.trim(),
-          cargo: "ALUNO",
-        },
-        undefined,
-        true,
-      );
-
       const payloadFinal = {
         ...dadosEtapa1,
         cpf: cpf.trim(),
@@ -278,7 +243,7 @@ export default function CadastroComplementoForm({
       setErroGeral(
         erro instanceof Error
           ? erro.message
-          : "Não foi possível concluir o cadastro. Tente novamente.",
+          : "Não foi possível avançar para a próxima etapa. Tente novamente.",
       );
     } finally {
       setCarregando(false);

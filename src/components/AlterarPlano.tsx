@@ -5,14 +5,16 @@ import { useRouter } from "next/navigation";
 import { AlertaErro, AlertaSucesso } from "./AcessoUI";
 import { Botao, BotaoLink, Cartao, Divisor, LinhaInfo } from "./PainelUI";
 import { formatarMoeda, planosConta } from "@/data/aluno";
-import { useUsuarioLogado } from "@/lib/sessao";
 import {
   obterUsuarioAPI,
   obterPlanosAPI,
   atualizarAssinaturaAPI,
+  criarAssinaturaAPI,
+  atualizarUsuarioAPI,
   type PlanoDetalhes,
   type UsuarioDetalhes,
 } from "@/services/api";
+import { salvarSessao, useUsuarioLogado } from "@/lib/sessao";
 
 export default function AlterarPlano() {
   const router = useRouter();
