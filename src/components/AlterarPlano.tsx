@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { AlertaErro, AlertaSucesso } from "./AcessoUI";
+import { AlertaErro } from "./AcessoUI";
 import { Botao, BotaoLink, Cartao, Divisor, LinhaInfo } from "./PainelUI";
 import { formatarMoeda, planosConta } from "@/data/aluno";
 import {
@@ -33,7 +33,6 @@ export default function AlterarPlano() {
 
   const [ciente, setCiente] = useState(false);
   const [salvando, setSalvando] = useState(false);
-  const [sucesso, setSucesso] = useState(false);
   const [erro, setErro] = useState("");
 
   const montado = useSyncExternalStore(
@@ -155,7 +154,6 @@ export default function AlterarPlano() {
 
   function escolher(id: number | string) {
     setSelecionado(id);
-    setSucesso(false);
     setErro("");
   }
 
@@ -163,7 +161,6 @@ export default function AlterarPlano() {
     if (!novoPlano || !mudou || salvando) return;
 
     setSalvando(true);
-    setSucesso(false);
     setErro("");
 
     try {
@@ -210,15 +207,13 @@ export default function AlterarPlano() {
         persistir,
       );
 
-      setSucesso(true);
-      setCiente(false);
+      router.push("/minha-conta/plano/confirmado");
     } catch (e) {
       setErro(
         e instanceof Error
           ? e.message
           : "Não foi possível alterar o plano. Tente novamente.",
       );
-    } finally {
       setSalvando(false);
     }
   }
@@ -359,16 +354,6 @@ export default function AlterarPlano() {
         {erro && (
           <div className="mt-4">
             <AlertaErro>{erro}</AlertaErro>
-          </div>
-        )}
-
-        {sucesso && (
-          <div className="mt-4">
-            <AlertaSucesso>
-              {planoAtual
-                ? `Seu plano foi atualizado para ${planoAtual.nome} com sucesso!`
-                : "Plano contratado com sucesso!"}
-            </AlertaSucesso>
           </div>
         )}
 
