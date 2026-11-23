@@ -3,30 +3,72 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Botao, BotaoLink } from "./PainelUI";
-import { cancelarAssinaturaAPI } from "@/services/api";
+import { cancelarAssinaturaAPI, obterUsuarioAPI } from "@/services/api";
+import { salvarSessao, useUsuarioLogado } from "@/lib/sessao";
 
 interface CancelamentoFormProps {
   assinaturaId?: number;
+  usuarioId?: number | string;
 }
 
 export default function CancelamentoForm({
   assinaturaId,
+  usuarioId,
 }: CancelamentoFormProps) {
   const router = useRouter();
+  const usuarioSessao = useUsuarioLogado();
   const [ciente, setCiente] = useState(false);
   const [cancelando, setCancelando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
   async function handleConfirmar() {
+    if (cancelando) return;
     setCancelando(true);
+    setErro(null);
+
     try {
-      if (assinaturaId) {
-        await cancelarAssinaturaAPI(assinaturaId);
+      const idUsuarioFinal = usuarioId ?? usuarioSessao?.id;
+      let idAssinaturaFinal = assinaturaId;
+
+      if (!idAssinaturaFinal && idUsuarioFinal) {
+        const dadosUsuario = await obterUsuarioAPI(idUsuarioFinal);
+        const ativa = dadosUsuario.assinaturas?.find(
+          (a) => a.status === "ATIVA",
+        );
+        idAssinaturaFinal = ativa?.id;
       }
+
+      if (!idAssinaturaFinal) {
+        throw new Error("Nenhuma assinatura ativa encontrada para cancelar.");
+      }
+
+      await cancelarAssinaturaAPI(idAssinaturaFinal);
+
+      if (idUsuarioFinal) {
+        const dadosAtualizados = await obterUsuarioAPI(idUsuarioFinal);
+        const persistir = Boolean(localStorage.getItem("usuario"));
+
+        salvarSessao(
+          {
+            ...(usuarioSessao || {}),
+            ...dadosAtualizados,
+            cpf: dadosAtualizados.cpf ?? undefined,
+            sexo: dadosAtualizados.sexo ?? undefined,
+            plano: undefined,
+            planoId: undefined,
+          },
+          undefined,
+          persistir,
+        );
+      }
+
       router.push("/minha-conta/cancelamento/confirmado");
-    } catch (e) {
-      console.error("Erro ao cancelar assinatura:", e);
-      // Navega mesmo assim para tela de confirmação/orientação
-      router.push("/minha-conta/cancelamento/confirmado");
+    } catch (e: unknown) {
+      const mensagem =
+        e instanceof Error
+          ? e.message
+          : "Não foi possível cancelar sua assinatura. Tente novamente.";
+      setErro(mensagem);
     } finally {
       setCancelando(false);
     }
@@ -41,13 +83,21 @@ export default function CancelamentoForm({
           onChange={(e) => setCiente(e.target.checked)}
           className="h-4 w-4 cursor-pointer accent-brand"
         />
-        Entendo que estou solicitando o cancelamento do meu plano ativo na RiseFit.
+        Entendo que estou solicitando o cancelamento do meu plano ativo na
+        RiseFit.
       </label>
+
+      {erro && (
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3.5 text-sm text-red-700">
+          {erro}
+        </div>
+      )}
+
       <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:flex-wrap sm:gap-3">
         <BotaoLink href="/minha-conta">Manter meu plano</BotaoLink>
         <Botao
           variante="secundario"
-          disabled={!ciente || cancelando}
+          disabled={!ciente || cancelando || !assinaturaId}
           onClick={handleConfirmar}
         >
           {cancelando ? "Processando solicitação..." : "Confirmar solicitação"}
