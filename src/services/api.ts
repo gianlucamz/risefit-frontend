@@ -9,6 +9,7 @@ export interface CheckoutPayload {
         telefone: string;
         cpf: string;
         sexo: string;
+        planoId?: number;
     };
     endereco: {
         cep: string;
@@ -25,6 +26,7 @@ export interface CheckoutPayload {
         bandeira: string;
         ultimosDigitos: string;
     };
+    planoId?: number;
 }
 
 export async function processarCheckoutAPI(payload: CheckoutPayload) {
@@ -190,6 +192,14 @@ export interface UsuarioDetalhes {
     sexo?: string | null;
     dataNascimento?: string;
     cargo?: string;
+    planoId?: number | null;
+    plano?: {
+        id: number;
+        nome: string;
+        descricao?: string | null;
+        preco: string | number;
+        duracaoMeses: number;
+    } | null;
     criadoEm?: string;
     atualizadoEm?: string;
     assinaturas?: {
@@ -326,4 +336,11 @@ export async function cancelarAssinaturaAPI(id: number): Promise<AssinaturaDetal
     return solicitarAPI<AssinaturaDetalhes>(`/subscriptions/${id}`, {
         method: 'DELETE',
     });
+}
+
+export async function alterarPlanoUsuarioAPI(
+    usuarioId: number | string,
+    planoId: number
+): Promise<UsuarioDetalhes> {
+    return atualizarUsuarioAPI(usuarioId, { planoId });
 }

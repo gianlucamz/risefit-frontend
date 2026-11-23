@@ -6,10 +6,10 @@ import { Suspense, useState } from "react";
 import { IconeCheck } from "@/components/PainelUI";
 import {
   processarCheckoutAPI,
-  criarAssinaturaAPI,
   obterPlanosAPI,
+  obterUsuarioAPI,
   type CheckoutPayload,
-  type AssinaturaDetalhes,
+  type UsuarioDetalhes,
 } from "@/services/api";
 import { salvarSessao } from "@/lib/sessao";
 
@@ -115,8 +115,34 @@ function CadastroConcluidoConteudo() {
 
       const pendente = JSON.parse(pendenteRaw);
 
-      // 1. Processa checkout e cadastro atômico no backend
-      const payloadCheckout: CheckoutPayload = {
+      const idPlanoParaAssinar = pendente.planoId || plano.id;
+      let planoIdFinal = Number(idPlanoParaAssinar);
+
+      try {
+        const planosApi = await obterPlanosAPI();
+        if (Array.isArray(planosApi) && planosApi.length > 0) {
+          const slug = (pendente.planoSlug || plano.slug || "").toLowerCase();
+          const nome = (pendente.planoNome || plano.nome || "").toLowerCase();
+          const encontrado =
+            planosApi.find(
+              (p) =>
+                p.nome.toLowerCase() === slug ||
+                p.nome.toLowerCase() === nome ||
+                p.nome.toLowerCase().includes(slug) ||
+                p.nome.toLowerCase().includes(nome),
+            ) || planosApi.find((p) => p.id === planoIdFinal);
+
+          if (encontrado) {
+            planoIdFinal = encontrado.id;
+          } else {
+            const idx =
+              slug === "essencial" ? 0 : slug === "personalizado" ? 1 : 2;
+            planoIdFinal = (planosApi[idx] || planosApi[0]).id;
+          }
+        }
+      } catch {}
+
+      const payloadCheckout: CheckoutPayload & { planoNome?: string } = {
         usuario: {
           nome: pendente.usuario?.nome || "",
           email: pendente.usuario?.email || "",
@@ -125,6 +151,7 @@ function CadastroConcluidoConteudo() {
           telefone: pendente.usuario?.telefone || "",
           cpf: pendente.usuario?.cpf || "",
           sexo: pendente.usuario?.sexo || "Não informado",
+          planoId: planoIdFinal,
         },
         endereco: {
           cep: pendente.endereco?.cep || "",
@@ -141,6 +168,8 @@ function CadastroConcluidoConteudo() {
           bandeira: "VISA",
           ultimosDigitos: "1234",
         },
+        planoId: planoIdFinal,
+        planoNome: pendente.planoNome || plano.nome,
       };
 
       const respostaCheckout = await processarCheckoutAPI(payloadCheckout);
@@ -154,48 +183,13 @@ function CadastroConcluidoConteudo() {
         (resObj.usuarioId as number | string | undefined) ||
         pendente.usuario?.id;
 
-      // 2. Registra a assinatura ativa do plano
-      const idPlanoParaAssinar = pendente.planoId || plano.id;
-      let planoIdFinal = Number(idPlanoParaAssinar);
-
-      try {
-        const planosApi = await obterPlanosAPI();
-        if (Array.isArray(planosApi) && planosApi.length > 0) {
-          const slug = (pendente.planoSlug || plano.slug || "").toLowerCase();
-          const nome = (pendente.planoNome || plano.nome || "").toLowerCase();
-          const encontrado =
-            planosApi.find((p) => p.id === planoIdFinal) ||
-            planosApi.find(
-              (p) =>
-                p.nome.toLowerCase().includes(slug) ||
-                p.nome.toLowerCase().includes(nome),
-            );
-          if (encontrado) {
-            planoIdFinal = encontrado.id;
-          } else {
-            const idx =
-              slug === "essencial" ? 0 : slug === "personalizado" ? 1 : 2;
-            planoIdFinal = (planosApi[idx] || planosApi[0]).id;
-          }
-        }
-      } catch {
-        // Usa planoIdFinal direto se a listagem falhar
-      }
-
-      let assinaturaCriada: AssinaturaDetalhes | null = null;
-      if (usuarioId && planoIdFinal) {
+      let usuarioAtualizado: UsuarioDetalhes | null = null;
+      if (usuarioId) {
         try {
-          assinaturaCriada = await criarAssinaturaAPI({
-            usuarioId: Number(usuarioId),
-            planoId: Number(planoIdFinal),
-            status: "ATIVA",
-          });
-        } catch (errAssinatura) {
-          console.warn("Aviso ao vincular assinatura ativa:", errAssinatura);
-        }
+          usuarioAtualizado = await obterUsuarioAPI(usuarioId);
+        } catch {}
       }
 
-      // 3. Salva sessão autenticada no navegador com os dados do plano e assinatura
       const dadosPlano = {
         id: planoIdFinal,
         nome: pendente.planoNome || plano.nome,
@@ -204,8 +198,8 @@ function CadastroConcluidoConteudo() {
         duracaoMeses: 1,
       };
 
-      const dadosAssinatura = {
-        id: assinaturaCriada?.id || 1,
+      const assinaturaFallback = {
+        id: 1,
         usuarioId: Number(usuarioId),
         planoId: planoIdFinal,
         dataInicio: new Date().toISOString(),
@@ -217,18 +211,22 @@ function CadastroConcluidoConteudo() {
       salvarSessao(
         {
           id: usuarioId,
-          nome: pendente.usuario?.nome || "",
-          email: pendente.usuario?.email || "",
-          cpf: pendente.usuario?.cpf || "",
+          nome: usuarioAtualizado?.nome || pendente.usuario?.nome || "",
+          email: usuarioAtualizado?.email || pendente.usuario?.email || "",
+          cpf: usuarioAtualizado?.cpf ?? (pendente.usuario?.cpf || undefined),
+          telefone:
+            usuarioAtualizado?.telefone || pendente.usuario?.telefone || "",
           cargo: "ALUNO",
-          assinaturas: [dadosAssinatura],
-          plano: dadosPlano,
+          assinaturas:
+            usuarioAtualizado?.assinaturas &&
+            usuarioAtualizado.assinaturas.length > 0
+              ? usuarioAtualizado.assinaturas
+              : [assinaturaFallback],
         },
         undefined,
         true,
       );
 
-      // 4. Limpa dados temporários de rascunho do sessionStorage
       try {
         sessionStorage.removeItem("risefit_cadastro_pendente");
         sessionStorage.removeItem("risefit_cadastro_step1");
@@ -237,7 +235,6 @@ function CadastroConcluidoConteudo() {
         sessionStorage.removeItem("risefit_plano_escolhido");
       } catch {}
 
-      // 5. Redireciona para o destino solicitado
       router.push(destino);
     } catch (err: unknown) {
       const mensagem =
@@ -253,7 +250,6 @@ function CadastroConcluidoConteudo() {
   return (
     <main className="min-h-[calc(100vh-80px)] bg-[#f8f8f9] px-4 pt-8 pb-16 sm:px-6 lg:pt-12 lg:pb-24">
       <div className="mx-auto max-w-xl">
-        {/* Link de retorno no topo esquerdo do container central */}
         <div className="text-left mb-6">
           <Link
             href={`/cadastro/endereco?plano=${encodeURIComponent(plano.slug)}`}
@@ -263,7 +259,6 @@ function CadastroConcluidoConteudo() {
           </Link>
         </div>
 
-        {/* Cabeçalho centralizado */}
         <header className="flex flex-col items-center text-center">
           <div className="mb-4 text-brand">
             <IconeCheck className="h-10 w-10 text-brand" />
@@ -279,7 +274,6 @@ function CadastroConcluidoConteudo() {
           </p>
         </header>
 
-        {/* Card branco centralizado (Resumo do plano) */}
         <div className="mt-8 rounded-2xl border border-gray-200/80 bg-white p-6 sm:p-8 shadow-xs text-left">
           <h2 className="text-lg sm:text-xl font-bold text-[#0f172a] mb-5">
             Resumo do plano
@@ -318,14 +312,12 @@ function CadastroConcluidoConteudo() {
           </dl>
         </div>
 
-        {/* Mensagem de erro amigável se a API falhar */}
         {erro && (
           <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             {erro}
           </div>
         )}
 
-        {/* Ações abaixo do card */}
         <div className="mt-6 space-y-3">
           <button
             type="button"

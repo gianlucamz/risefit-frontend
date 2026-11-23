@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import {
   BotaoLink,
@@ -10,8 +10,23 @@ import {
   Selo,
 } from "@/components/PainelUI";
 import { formatarMoeda } from "@/data/aluno";
-import { useUsuarioLogado, mascararCPF, mascararTelefone } from "@/lib/sessao";
+import {
+  useUsuarioLogado,
+  mascararCPF,
+  mascararTelefone,
+  salvarSessao,
+} from "@/lib/sessao";
 import { obterUsuarioAPI, type UsuarioDetalhes } from "@/services/api";
+
+const subscribeVazio = () => () => {};
+
+interface PlanoExibicao {
+  id?: number;
+  nome: string;
+  descricao?: string | null;
+  preco: string | number;
+  duracaoMeses?: number;
+}
 
 export default function MinhaContaPage() {
   const router = useRouter();
@@ -19,46 +34,72 @@ export default function MinhaContaPage() {
   const [usuario, setUsuario] = useState<UsuarioDetalhes | null>(null);
   const [idCarregado, setIdCarregado] = useState<string | number | null>(null);
 
-  const sessaoStorage =
-    typeof window !== "undefined"
-      ? localStorage.getItem("usuario") || sessionStorage.getItem("usuario")
-      : null;
+  const montado = useSyncExternalStore(
+    subscribeVazio,
+    () => true,
+    () => false,
+  );
 
-  let usuarioIdStorage: string | number | null = null;
-  if (sessaoStorage) {
-    try {
-      usuarioIdStorage = JSON.parse(sessaoStorage).id ?? null;
-    } catch {
-      usuarioIdStorage = null;
+  let sessaoObj: Record<string, unknown> | null = null;
+  if (montado) {
+    const raw =
+      localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
+    if (raw) {
+      try {
+        sessaoObj = JSON.parse(raw);
+      } catch {
+        sessaoObj = null;
+      }
     }
   }
 
-  const usuarioId = usuarioSessao?.id ?? usuarioIdStorage;
-  const carregando = Boolean(usuarioId && idCarregado !== usuarioId);
+  const usuarioId = montado
+    ? ((usuarioSessao?.id ?? sessaoObj?.id) as string | number | undefined)
+    : undefined;
+
+  const carregando =
+    !montado || Boolean(usuarioId && idCarregado !== usuarioId);
 
   useEffect(() => {
-    if (!sessaoStorage && !usuarioSessao) {
+    if (!montado) return;
+
+    const temSessao =
+      Boolean(usuarioId) ||
+      Boolean(localStorage.getItem("usuario")) ||
+      Boolean(sessionStorage.getItem("usuario"));
+
+    if (!temSessao) {
       router.push("/login");
       return;
     }
 
-    if (!usuarioId) {
-      return;
-    }
+    if (!usuarioId) return;
 
     let ativo = true;
 
     async function carregarDados() {
       try {
         const dados = await obterUsuarioAPI(usuarioId!);
-        if (ativo) {
-          setUsuario(dados);
-        }
+        if (!ativo) return;
+
+        setUsuario(dados);
+
+        const persistir = Boolean(localStorage.getItem("usuario"));
+        salvarSessao(
+          {
+            ...(sessaoObj || {}),
+            ...dados,
+            cpf: dados.cpf ?? undefined,
+            sexo: dados.sexo ?? undefined,
+          },
+          undefined,
+          persistir,
+        );
       } catch (erro) {
         console.error("Erro ao carregar dados do usuário:", erro);
       } finally {
         if (ativo) {
-          setIdCarregado(usuarioId);
+          setIdCarregado(usuarioId!);
         }
       }
     }
@@ -68,43 +109,43 @@ export default function MinhaContaPage() {
     return () => {
       ativo = false;
     };
-  }, [usuarioId, sessaoStorage, usuarioSessao, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [montado, usuarioId, router]);
 
   const nomeExibicao =
     usuario?.nome ||
-    usuarioSessao?.nome ||
-    (usuarioSessao?.nomeCompleto as string) ||
+    (usuarioSessao?.nome as string) ||
+    (sessaoObj?.nome as string) ||
     "Aluno RiseFit";
-  const emailExibicao = usuario?.email || usuarioSessao?.email || "—";
+  const emailExibicao =
+    usuario?.email ||
+    (usuarioSessao?.email as string) ||
+    (sessaoObj?.email as string) ||
+    "—";
   const cpfExibicao = mascararCPF(
-    usuario?.cpf || (usuarioSessao?.cpf as string),
+    usuario?.cpf ||
+      (usuarioSessao?.cpf as string) ||
+      (sessaoObj?.cpf as string),
   );
   const telefoneExibicao = mascararTelefone(
-    usuario?.telefone || (usuarioSessao?.telefone as string),
+    usuario?.telefone ||
+      (usuarioSessao?.telefone as string) ||
+      (sessaoObj?.telefone as string),
   );
 
   const assinaturasDisponiveis =
     usuario?.assinaturas && usuario.assinaturas.length > 0
       ? usuario.assinaturas
-      : (usuarioSessao?.assinaturas as UsuarioDetalhes["assinaturas"]) || [];
+      : (usuarioSessao?.assinaturas as UsuarioDetalhes["assinaturas"]) ||
+        (sessaoObj?.assinaturas as UsuarioDetalhes["assinaturas"]) ||
+        [];
 
   const assinaturaAtiva =
     assinaturasDisponiveis.find((a) => a.status === "ATIVA") ||
     assinaturasDisponiveis[0] ||
     null;
 
-  const plano =
-    assinaturaAtiva?.plano ||
-    (usuarioSessao?.plano as
-      | {
-          id: number;
-          nome: string;
-          descricao?: string | null;
-          preco: string | number;
-          duracaoMeses?: number;
-        }
-      | undefined) ||
-    null;
+  const plano: PlanoExibicao | null = assinaturaAtiva?.plano || null;
 
   const situacaoPlano =
     assinaturaAtiva?.status === "ATIVA"
@@ -112,9 +153,7 @@ export default function MinhaContaPage() {
       : assinaturaAtiva?.status
         ? assinaturaAtiva.status.charAt(0).toUpperCase() +
           assinaturaAtiva.status.slice(1).toLowerCase()
-        : plano
-          ? "Ativo"
-          : "Sem plano";
+        : "Sem plano";
 
   const dataFimFormatada = assinaturaAtiva?.dataFim
     ? new Date(assinaturaAtiva.dataFim).toLocaleDateString("pt-BR", {
@@ -231,7 +270,7 @@ export default function MinhaContaPage() {
                 <LinhaInfo rotulo="Autenticação" valor="Ativa e protegida" />
                 <LinhaInfo
                   rotulo="Identificador"
-                  valor={`ID #${usuario?.id || usuarioSessao?.id || "—"}`}
+                  valor={`ID #${usuario?.id || usuarioId || "—"}`}
                 />
                 <LinhaInfo
                   rotulo="Membro desde"
@@ -278,7 +317,7 @@ export default function MinhaContaPage() {
           </div>
         )}
 
-        {assinaturaAtiva && (
+        {!carregando && assinaturaAtiva && (
           <section className="mt-6 grid gap-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:grid-cols-[1fr_240px] lg:p-7">
             <div>
               <Selo tom="alerta">
