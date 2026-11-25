@@ -333,6 +333,14 @@ export default function AdminSolicitacoesPage() {
                   (a) =>
                     a.usuarioId === item.usuarioId && a.status === "ATIVA",
                 );
+                const ehCancelamento = Boolean(
+                  assinaturaAtivaDoUsuario &&
+                    assinaturaAtivaDoUsuario.planoId === item.planoId,
+                );
+                const ehTroca = Boolean(
+                  assinaturaAtivaDoUsuario &&
+                    assinaturaAtivaDoUsuario.planoId !== item.planoId,
+                );
 
                 return (
                 <div
@@ -350,16 +358,18 @@ export default function AdminSolicitacoesPage() {
                       </p>
                     </div>
                     <Selo tom="alerta">
-                      {assinaturaAtivaDoUsuario
-                        ? "Troca de Plano • Pendente"
-                        : "Novo Plano • Pendente"}
+                      {ehCancelamento
+                        ? "Cancelamento • Pendente"
+                        : ehTroca
+                          ? "Troca de Plano • Pendente"
+                          : "Novo Plano • Pendente"}
                     </Selo>
                   </div>
 
                   <Divisor className="my-3" />
 
                   <dl>
-                    {assinaturaAtivaDoUsuario && (
+                    {ehTroca && assinaturaAtivaDoUsuario && (
                       <LinhaInfo
                         rotulo="Plano atual"
                         valor={
@@ -369,7 +379,9 @@ export default function AdminSolicitacoesPage() {
                       />
                     )}
                     <LinhaInfo
-                      rotulo="Plano solicitado"
+                      rotulo={
+                        ehCancelamento ? "Plano a cancelar" : "Plano solicitado"
+                      }
                       valor={item.plano?.nome || `Plano #${item.planoId}`}
                     />
                     <LinhaInfo
@@ -396,14 +408,18 @@ export default function AdminSolicitacoesPage() {
                     >
                       {processandoId === item.id
                         ? "Processando..."
-                        : "Aprovar plano"}
+                        : ehCancelamento
+                          ? "Aprovar cancelamento"
+                          : "Aprovar plano"}
                     </Botao>
                     <Botao
                       variante="perigo"
                       disabled={processandoId === item.id}
                       onClick={() => handleRecusar(item.id)}
                     >
-                      Recusar solicitação
+                      {ehCancelamento
+                        ? "Recusar cancelamento"
+                        : "Recusar solicitação"}
                     </Botao>
                   </div>
                 </div>

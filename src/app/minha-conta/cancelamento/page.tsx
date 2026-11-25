@@ -86,6 +86,13 @@ export default function CancelamentoPage() {
 
   const assinaturaAtiva =
     usuario?.assinaturas?.find((a) => a.status === "ATIVA") || null;
+  const assinaturaPendente =
+    usuario?.assinaturas?.find((a) => a.status === "PENDENTE") || null;
+  const cancelamentoJaPendente = Boolean(
+    assinaturaAtiva &&
+      assinaturaPendente &&
+      assinaturaAtiva.planoId === assinaturaPendente.planoId,
+  );
   const plano = assinaturaAtiva?.plano || null;
 
   return (
@@ -95,6 +102,13 @@ export default function CancelamentoPage() {
       subtitulo="Antes de continuar, consulte as condições do seu plano."
       largura="estreita"
     >
+      {cancelamentoJaPendente && (
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Você já possui uma solicitação de cancelamento aguardando aprovação do
+          administrador.
+        </div>
+      )}
+
       <Cartao titulo="Plano a ser revisado">
         {carregando ? (
           <p className="py-4 text-sm text-gray-500">
@@ -115,24 +129,25 @@ export default function CancelamentoPage() {
               />
               <LinhaInfo
                 rotulo="Situação atual"
-                valor={assinaturaAtiva ? "Ativo" : "Nenhuma assinatura ativa"}
+                valor={
+                  cancelamentoJaPendente
+                    ? "Ativo (cancelamento em análise)"
+                    : assinaturaAtiva
+                      ? "Ativo"
+                      : "Nenhuma assinatura ativa"
+                }
               />
             </dl>
             <Divisor />
             <p className="text-sm text-gray-500">
-              Ao confirmar, sua assinatura ativa será encerrada imediatamente e
-              você ficará sem plano vinculado.
+              Ao confirmar, sua solicitação de cancelamento será enviada para
+              análise do administrador. Seu plano continuará ativo até a
+              aprovação.
             </p>
             <dl className="mt-2">
               <LinhaInfo
-                rotulo="Data de encerramento"
-                valor={
-                  assinaturaAtiva?.dataFim
-                    ? new Date(assinaturaAtiva.dataFim).toLocaleDateString(
-                        "pt-BR",
-                      )
-                    : "Imediato após confirmação"
-                }
+                rotulo="Encerramento"
+                valor="Após aprovação do administrador"
               />
               <LinhaInfo
                 rotulo="Condições aplicáveis"
@@ -150,7 +165,9 @@ export default function CancelamentoPage() {
 
       <CancelamentoForm
         assinaturaId={assinaturaAtiva?.id}
+        planoId={assinaturaAtiva?.planoId}
         usuarioId={usuarioId ?? undefined}
+        cancelamentoJaPendente={cancelamentoJaPendente}
       />
     </PaginaInterna>
   );

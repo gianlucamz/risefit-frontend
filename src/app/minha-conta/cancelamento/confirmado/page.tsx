@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import {
   BotaoLink,
   Cartao,
-  IconeCheck,
+  IconeRelogio,
   LinhaInfo,
   LinkSeta,
   PaginaInterna,
@@ -34,25 +34,37 @@ export default function CancelamentoConfirmadoPage() {
       .catch((e) => console.error("Erro ao carregar dados do usuário:", e));
   }, [usuarioSessao]);
 
-  const planoNome = usuario?.assinaturas?.[0]?.plano?.nome || "Plano RiseFit";
+  const assinaturaPendente =
+    usuario?.assinaturas?.find((a) => a.status === "PENDENTE") || null;
+  const assinaturaAtiva =
+    usuario?.assinaturas?.find((a) => a.status === "ATIVA") || null;
+  const planoNome =
+    assinaturaPendente?.plano?.nome ||
+    assinaturaAtiva?.plano?.nome ||
+    usuario?.assinaturas?.[0]?.plano?.nome ||
+    "Plano RiseFit";
 
   return (
     <PaginaInterna
       voltar={{ href: "/minha-conta", texto: "Minha conta" }}
-      titulo="Solicitação de cancelamento registrada"
-      subtitulo="Sua solicitação foi processada no sistema com sucesso."
+      titulo="Solicitação de cancelamento enviada!"
+      subtitulo="Sua solicitação foi registrada e está aguardando aprovação do administrador. Enquanto isso, seu plano atual continua ativo normalmente."
       largura="estreita"
       centralizado
-      icone={<IconeCheck />}
+      icone={<IconeRelogio className="h-10 w-10" />}
     >
       <Cartao titulo="Resumo da solicitação">
         <dl>
           <LinhaInfo rotulo="Plano" valor={planoNome} />
-          <LinhaInfo rotulo="Situação" valor="Cancelamento solicitado" />
-          <LinhaInfo rotulo="Acesso restante" valor="Até o término do período faturado" />
+          <LinhaInfo rotulo="Situação" valor="Pendente de aprovação" />
+          <LinhaInfo
+            rotulo="Acesso restante"
+            valor="Plano ativo até aprovação do administrador"
+          />
         </dl>
         <p className="mt-3 text-sm text-gray-500">
-          Você ainda pode utilizar a plataforma e seus treinos até a data final do ciclo atual.
+          Você continuará com acesso normal à plataforma e aos seus treinos até
+          que a solicitação seja aprovada pelo administrador.
         </p>
       </Cartao>
 

@@ -3,6 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Botao,
   BotaoLink,
   Cartao,
   IconeAlerta,
@@ -16,7 +17,11 @@ import {
   mascararTelefone,
   salvarSessao,
 } from "@/lib/sessao";
-import { obterUsuarioAPI, type UsuarioDetalhes } from "@/services/api";
+import {
+  cancelarAssinaturaAPI,
+  obterUsuarioAPI,
+  type UsuarioDetalhes,
+} from "@/services/api";
 
 const subscribeVazio = () => () => {};
 
@@ -33,6 +38,7 @@ export default function MinhaContaPage() {
   const usuarioSessao = useUsuarioLogado();
   const [usuario, setUsuario] = useState<UsuarioDetalhes | null>(null);
   const [idCarregado, setIdCarregado] = useState<string | number | null>(null);
+  const [desistindoCancelamento, setDesistindoCancelamento] = useState(false);
 
   const montado = useSyncExternalStore(
     subscribeVazio,
@@ -147,15 +153,53 @@ export default function MinhaContaPage() {
     assinaturasDisponiveis.find((a) => a.status === "PENDENTE") || null;
   const assinaturaExibida = assinaturaAtiva || assinaturaPendente;
   const apenasPendente = !assinaturaAtiva && Boolean(assinaturaPendente);
-  const trocaPendente = Boolean(assinaturaAtiva && assinaturaPendente);
+  const cancelamentoPendente = Boolean(
+    assinaturaAtiva &&
+    assinaturaPendente &&
+    assinaturaAtiva.planoId === assinaturaPendente.planoId,
+  );
+  const trocaPendente = Boolean(
+    assinaturaAtiva &&
+    assinaturaPendente &&
+    assinaturaAtiva.planoId !== assinaturaPendente.planoId,
+  );
+
+  async function handleDesistirCancelamento() {
+    if (!assinaturaPendente || !usuarioId || desistindoCancelamento) return;
+    setDesistindoCancelamento(true);
+    try {
+      await cancelarAssinaturaAPI(assinaturaPendente.id);
+      const dados = await obterUsuarioAPI(usuarioId);
+      setUsuario(dados);
+      const persistir = Boolean(localStorage.getItem("usuario"));
+      salvarSessao(
+        {
+          ...(sessaoObj || {}),
+          ...dados,
+          cpf: dados.cpf ?? undefined,
+          sexo: dados.sexo ?? undefined,
+          plano: undefined,
+          planoId: undefined,
+        },
+        undefined,
+        persistir,
+      );
+    } catch (erro) {
+      console.error("Erro ao cancelar solicitação pendente:", erro);
+    } finally {
+      setDesistindoCancelamento(false);
+    }
+  }
 
   const plano: PlanoExibicao | null = assinaturaExibida?.plano || null;
 
-  const situacaoPlano = assinaturaAtiva
-    ? "Ativo"
-    : assinaturaPendente
-      ? "Pendente"
-      : "Sem plano";
+  const situacaoPlano = cancelamentoPendente
+    ? "Cancelamento pendente"
+    : assinaturaAtiva
+      ? "Ativo"
+      : assinaturaPendente
+        ? "Pendente"
+        : "Sem plano";
 
   const dataFimFormatada = apenasPendente
     ? "Aguardando aprovação"
@@ -234,7 +278,11 @@ export default function MinhaContaPage() {
             <Cartao
               titulo="Plano atual"
               acao={
-                <Selo tom={apenasPendente ? "alerta" : "neutro"}>
+                <Selo
+                  tom={
+                    apenasPendente || cancelamentoPendente ? "alerta" : "neutro"
+                  }
+                >
                   {situacaoPlano}
                 </Selo>
               }
@@ -379,9 +427,21 @@ export default function MinhaContaPage() {
                 >
                   Ver condições
                 </BotaoLink>
-                <BotaoLink href="/minha-conta/cancelamento" variante="perigo">
-                  Solicitar cancelamento
-                </BotaoLink>
+                {cancelamentoPendente ? (
+                  <Botao
+                    variante="secundario"
+                    disabled={desistindoCancelamento}
+                    onClick={handleDesistirCancelamento}
+                  >
+                    {desistindoCancelamento
+                      ? "Cancelando pedido..."
+                      : "Desistir do cancelamento"}
+                  </Botao>
+                ) : (
+                  <BotaoLink href="/minha-conta/cancelamento" variante="perigo">
+                    Solicitar cancelamento
+                  </BotaoLink>
+                )}
               </div>
             </Cartao>
           </div>
