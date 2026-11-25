@@ -7,7 +7,7 @@ import {
   BotaoLink,
   Cartao,
   Divisor,
-  IconeCheck,
+  IconeRelogio,
   LinhaInfo,
   PaginaInterna,
 } from "@/components/PainelUI";
@@ -94,37 +94,49 @@ export default function PlanoConfirmadoPage() {
       (sessaoObj?.assinaturas as UsuarioDetalhes["assinaturas"]) ||
       [];
 
+  const assinaturaPendente =
+    assinaturas.find((a) => a.status === "PENDENTE") || null;
   const assinaturaAtiva = assinaturas.find((a) => a.status === "ATIVA") || null;
-  const plano = assinaturaAtiva?.plano || null;
+  const assinaturaExibida = assinaturaPendente || assinaturaAtiva;
+  const plano = assinaturaExibida?.plano || null;
 
-  const proximaCobranca = assinaturaAtiva?.dataFim
-    ? new Date(assinaturaAtiva.dataFim).toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      })
-    : "A confirmar";
+  const titulo = assinaturaAtiva
+    ? "Solicitação de alteração enviada!"
+    : "Solicitação de plano enviada!";
+  const subtitulo = assinaturaAtiva
+    ? "Sua solicitação foi registrada e está aguardando aprovação do administrador. Enquanto isso, seu plano atual continua ativo normalmente."
+    : "Sua solicitação foi registrada e está aguardando aprovação do administrador.";
+
+  const proximaCobranca = assinaturaPendente
+    ? "Após aprovação"
+    : assinaturaAtiva?.dataFim
+      ? new Date(assinaturaAtiva.dataFim).toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        })
+      : "A confirmar";
 
   return (
     <PaginaInterna
       voltar={{ href: "/minha-conta", texto: "Minha conta" }}
       largura="estreita"
       centralizado
-      icone={<IconeCheck className="h-10 w-10" />}
-      titulo="Plano alterado com sucesso!"
-      subtitulo="Sua assinatura já foi atualizada e os novos benefícios estão ativos na sua conta."
+      icone={<IconeRelogio className="h-10 w-10" />}
+      titulo={titulo}
+      subtitulo={subtitulo}
     >
       <Cartao titulo="Resumo do plano" className="text-left shadow-sm">
         {carregando ? (
           <p className="py-4 text-sm text-gray-500">
-            Carregando detalhes do novo plano...
+            Carregando detalhes do plano solicitado...
           </p>
         ) : (
           <>
             <dl>
               <LinhaInfo
                 rotulo="Plano"
-                valor={plano?.nome || "Plano atualizado"}
+                valor={plano?.nome || "Plano solicitado"}
               />
               <LinhaInfo
                 rotulo="Mensalidade"
@@ -136,7 +148,13 @@ export default function PlanoConfirmadoPage() {
               />
               <LinhaInfo
                 rotulo="Situação"
-                valor={assinaturaAtiva ? "Ativo" : "Em processamento"}
+                valor={
+                  assinaturaPendente
+                    ? "Pendente de aprovação"
+                    : assinaturaAtiva
+                      ? "Ativo"
+                      : "Em processamento"
+                }
               />
             </dl>
             <Divisor />
