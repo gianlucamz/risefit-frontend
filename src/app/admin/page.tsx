@@ -328,7 +328,13 @@ export default function AdminSolicitacoesPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {pendentes.map((item) => (
+              {pendentes.map((item) => {
+                const assinaturaAtivaDoUsuario = assinaturas.find(
+                  (a) =>
+                    a.usuarioId === item.usuarioId && a.status === "ATIVA",
+                );
+
+                return (
                 <div
                   key={item.id}
                   className="rounded-xl border border-gray-200 bg-[#f8f8f9] p-4 sm:p-5"
@@ -343,12 +349,25 @@ export default function AdminSolicitacoesPage() {
                         {item.id}
                       </p>
                     </div>
-                    <Selo tom="alerta">Novo Cadastro • Pendente</Selo>
+                    <Selo tom="alerta">
+                      {assinaturaAtivaDoUsuario
+                        ? "Troca de Plano • Pendente"
+                        : "Novo Plano • Pendente"}
+                    </Selo>
                   </div>
 
                   <Divisor className="my-3" />
 
                   <dl>
+                    {assinaturaAtivaDoUsuario && (
+                      <LinhaInfo
+                        rotulo="Plano atual"
+                        valor={
+                          assinaturaAtivaDoUsuario.plano?.nome ||
+                          `Plano #${assinaturaAtivaDoUsuario.planoId}`
+                        }
+                      />
+                    )}
                     <LinhaInfo
                       rotulo="Plano solicitado"
                       valor={item.plano?.nome || `Plano #${item.planoId}`}
@@ -388,7 +407,8 @@ export default function AdminSolicitacoesPage() {
                     </Botao>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </Cartao>

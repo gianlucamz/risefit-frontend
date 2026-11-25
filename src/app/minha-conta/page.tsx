@@ -143,10 +143,11 @@ export default function MinhaContaPage() {
 
   const assinaturaAtiva =
     assinaturasDisponiveis.find((a) => a.status === "ATIVA") || null;
-  const assinaturaPendente = !assinaturaAtiva
-    ? assinaturasDisponiveis.find((a) => a.status === "PENDENTE") || null
-    : null;
+  const assinaturaPendente =
+    assinaturasDisponiveis.find((a) => a.status === "PENDENTE") || null;
   const assinaturaExibida = assinaturaAtiva || assinaturaPendente;
+  const apenasPendente = !assinaturaAtiva && Boolean(assinaturaPendente);
+  const trocaPendente = Boolean(assinaturaAtiva && assinaturaPendente);
 
   const plano: PlanoExibicao | null = assinaturaExibida?.plano || null;
 
@@ -156,7 +157,7 @@ export default function MinhaContaPage() {
       ? "Pendente"
       : "Sem plano";
 
-  const dataFimFormatada = assinaturaPendente
+  const dataFimFormatada = apenasPendente
     ? "Aguardando aprovação"
     : assinaturaAtiva?.dataFim
       ? new Date(assinaturaAtiva.dataFim).toLocaleDateString("pt-BR", {
@@ -233,7 +234,7 @@ export default function MinhaContaPage() {
             <Cartao
               titulo="Plano atual"
               acao={
-                <Selo tom={assinaturaPendente ? "alerta" : "neutro"}>
+                <Selo tom={apenasPendente ? "alerta" : "neutro"}>
                   {situacaoPlano}
                 </Selo>
               }
@@ -243,7 +244,7 @@ export default function MinhaContaPage() {
                 {plano?.nome || "Sem plano ativo"}
               </p>
               <p className="mt-1 mb-3 text-sm text-gray-500">
-                {assinaturaPendente
+                {apenasPendente
                   ? "Sua solicitação de plano está em análise e será ativada após a aprovação do administrador."
                   : plano?.descricao ||
                     "Assine um dos nossos planos para ter acesso aos treinos personalizados."}
@@ -262,6 +263,19 @@ export default function MinhaContaPage() {
                   valor={plano ? "Cartão de crédito / débito" : "Nenhum"}
                 />
               </dl>
+              {trocaPendente && assinaturaPendente && (
+                <div className="mt-4 flex flex-col gap-2 rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 text-xs text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+                  <span>
+                    Solicitação de troca para o plano{" "}
+                    <strong>
+                      {assinaturaPendente.plano?.nome ||
+                        `#${assinaturaPendente.planoId}`}
+                    </strong>{" "}
+                    aguardando aprovação do administrador.
+                  </span>
+                  <Selo tom="alerta">Troca pendente</Selo>
+                </div>
+              )}
               <div className="mt-auto grid gap-3 pt-4 sm:grid-cols-2">
                 <BotaoLink href="/minha-conta/plano">
                   {plano ? "Alterar plano" : "Escolher plano"}

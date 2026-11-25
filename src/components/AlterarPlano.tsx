@@ -8,7 +8,6 @@ import { formatarMoeda, planosConta } from "@/data/aluno";
 import {
   obterUsuarioAPI,
   obterPlanosAPI,
-  atualizarAssinaturaAPI,
   criarAssinaturaAPI,
   type PlanoDetalhes,
   type UsuarioDetalhes,
@@ -140,6 +139,9 @@ export default function AlterarPlano() {
     };
   }, [montado, usuarioId, router]);
 
+  const assinaturaPendente =
+    usuario?.assinaturas?.find((a) => a.status === "PENDENTE") || null;
+
   const planoAtual =
     planoAtualId !== null
       ? planos.find((p) => String(p.id) === String(planoAtualId)) || null
@@ -171,26 +173,19 @@ export default function AlterarPlano() {
       }
 
       const planoIdNumerico = Number(novoPlano.id);
-      const assinaturaAtiva = usuario?.assinaturas?.find(
-        (a) => a.status === "ATIVA",
-      );
 
-      if (assinaturaAtiva) {
-        await atualizarAssinaturaAPI(assinaturaAtiva.id, {
-          planoId: planoIdNumerico,
-          status: "ATIVA",
-        });
-      } else {
-        await criarAssinaturaAPI({
-          usuarioId: idFinal,
-          planoId: planoIdNumerico,
-          status: "ATIVA",
-        });
-      }
+      await criarAssinaturaAPI({
+        usuarioId: idFinal,
+        planoId: planoIdNumerico,
+        status: "PENDENTE",
+      });
 
       const dadosAtualizados = await obterUsuarioAPI(idFinal);
       setUsuario(dadosAtualizados);
-      setPlanoAtualId(planoIdNumerico);
+      const assinaturaAtivaAtualizada = dadosAtualizados.assinaturas?.find(
+        (a) => a.status === "ATIVA",
+      );
+      setPlanoAtualId(assinaturaAtivaAtualizada?.planoId ?? null);
       setSelecionado(null);
 
       const persistir = Boolean(localStorage.getItem("usuario"));
@@ -212,7 +207,7 @@ export default function AlterarPlano() {
       setErro(
         e instanceof Error
           ? e.message
-          : "Não foi possível alterar o plano. Tente novamente.",
+          : "Não foi possível enviar a solicitação de plano. Tente novamente.",
       );
       setSalvando(false);
     }
@@ -251,6 +246,18 @@ export default function AlterarPlano() {
 
   return (
     <>
+      {assinaturaPendente && (
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Você já possui uma solicitação pendente para o plano{" "}
+          <strong>
+            {assinaturaPendente.plano?.nome ||
+              `#${assinaturaPendente.planoId}`}
+          </strong>{" "}
+          aguardando aprovação. Se selecionar outro plano abaixo, sua
+          solicitação será atualizada.
+        </div>
+      )}
+
       <div className="grid items-start gap-6 md:grid-cols-3">
         {planos.map((plano) => {
           const ehAtual =
@@ -328,16 +335,19 @@ export default function AlterarPlano() {
         </div>
         <Divisor />
         <dl>
-          <LinhaInfo rotulo="Início da mudança" valor="Imediato" />
+          <LinhaInfo
+            rotulo="Início da mudança"
+            valor="Após aprovação do administrador"
+          />
           <LinhaInfo
             rotulo="Ajustes na cobrança"
-            valor="Atualizado na próxima fatura"
+            valor="Atualizado após aprovação"
           />
         </dl>
         <p className="mt-3 text-sm text-gray-500">
           {planoAtual
-            ? "A alteração do plano entrará em vigor imediatamente para o seu usuário."
-            : "A contratação do plano entrará em vigor imediatamente para o seu usuário."}
+            ? "Sua solicitação será enviada para análise do administrador. Enquanto aguarda aprovação, seu plano atual permanece ativo normalmente."
+            : "Sua solicitação de contratação será enviada para análise do administrador."}
         </p>
         <label className="mt-4 flex cursor-pointer items-center gap-3 text-sm text-gray-500">
           <input
@@ -347,8 +357,8 @@ export default function AlterarPlano() {
             className="h-4 w-4 cursor-pointer accent-brand"
           />
           {planoAtual
-            ? "Estou ciente da mudança para o plano selecionado."
-            : "Estou ciente da contratação do plano selecionado."}
+            ? "Estou ciente de que a alteração passará por aprovação administrativa."
+            : "Estou ciente de que a contratação passará por aprovação administrativa."}
         </label>
 
         {erro && (
@@ -363,10 +373,10 @@ export default function AlterarPlano() {
             onClick={handleConfirmarMudanca}
           >
             {salvando
-              ? "Processando..."
+              ? "Enviando solicitação..."
               : planoAtual
-                ? "Confirmar alteração de plano"
-                : "Confirmar contratação do plano"}
+                ? "Solicitar alteração de plano"
+                : "Solicitar contratação do plano"}
           </Botao>
           <BotaoLink href="/minha-conta" variante="secundario">
             Voltar para minha conta
