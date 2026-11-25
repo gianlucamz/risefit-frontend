@@ -1,36 +1,19 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-export interface CheckoutPayload {
-    usuario: {
-        nome: string;
-        email: string;
-        senha?: string;
-        dataNascimento: string;
-        telefone: string;
-        cpf: string;
-        sexo: string;
-        planoId?: number;
-    };
-    endereco: {
-        cep: string;
-        estado: string;
-        cidade: string;
-        bairro: string;
-        rua: string;
-        numero: string;
-        complemento?: string;
-    };
-    formaPagamento: 'credito' | 'debito';
-    pagamento: {
-        token: string;
-        bandeira: string;
-        ultimosDigitos: string;
-    };
-    planoId?: number;
+export interface PedidoLojaItemPayload {
+    produtoId: number;
+    quantidade: number;
+    precoUnitario?: number;
 }
 
-export async function processarCheckoutAPI(payload: CheckoutPayload) {
-    const response = await fetch(`${API_BASE_URL}/orders/checkout`, {
+export interface PedidoLojaPayload {
+    usuarioId: number;
+    itens: PedidoLojaItemPayload[];
+    status?: 'PENDENTE' | 'CONFIRMADO' | 'ENVIADO' | 'ENTREGUE' | 'CANCELADO';
+}
+
+export async function processarCheckoutAPI(payload: PedidoLojaPayload) {
+    const response = await fetch(`${API_BASE_URL}/orders`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -41,7 +24,7 @@ export async function processarCheckoutAPI(payload: CheckoutPayload) {
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-            errorData.message || 'Ocorreu um erro ao processar o cadastro e pagamento.'
+            errorData.message || 'Ocorreu um erro ao processar o pedido na loja virtual.'
         );
     }
 
@@ -83,6 +66,16 @@ function mensagemErroAPI(dados: unknown, status: number): string {
     return `Não foi possível concluir a solicitação (HTTP ${status}).`;
 }
 
+export interface EnderecoPayload {
+    cep: string;
+    estado: string;
+    cidade: string;
+    bairro: string;
+    rua: string;
+    numero: string;
+    complemento?: string;
+}
+
 export interface CadastroUsuarioPayload {
     nome: string;
     email: string;
@@ -92,6 +85,7 @@ export interface CadastroUsuarioPayload {
     cpf?: string;
     sexo?: string;
     cargo?: 'ALUNO' | 'PROFISSIONAL' | 'ADMIN';
+    endereco?: EnderecoPayload;
 }
 
 export async function cadastrarUsuarioAPI(payload: CadastroUsuarioPayload) {
@@ -343,4 +337,43 @@ export async function alterarPlanoUsuarioAPI(
     planoId: number
 ): Promise<UsuarioDetalhes> {
     return atualizarUsuarioAPI(usuarioId, { planoId });
+}
+
+export interface CadastroAlunoComPlanoPayload {
+    usuario: Omit<CadastroUsuarioPayload, 'endereco'>;
+    endereco: EnderecoPayload;
+    planoId: number;
+}
+
+export interface CadastroAlunoComPlanoResponse {
+    usuario: Record<string, unknown>;
+    usuarioId: number;
+    assinatura: AssinaturaDetalhes;
+}
+
+export async function cadastrarAlunoComPlanoAPI(
+    payload: CadastroAlunoComPlanoPayload
+): Promise<CadastroAlunoComPlanoResponse> {
+    const usuarioCriado = await cadastrarUsuarioAPI({
+        ...payload.usuario,
+        cargo: payload.usuario.cargo ?? 'ALUNO',
+        endereco: payload.endereco,
+    });
+
+    const usuarioId = Number(usuarioCriado.id);
+    if (!Number.isSafeInteger(usuarioId) || usuarioId <= 0) {
+        throw new Error('Não foi possível identificar o usuário criado.');
+    }
+
+    const assinatura = await criarAssinaturaAPI({
+        usuarioId,
+        planoId: payload.planoId,
+        status: 'PENDENTE',
+    });
+
+    return {
+        usuario: usuarioCriado,
+        usuarioId,
+        assinatura,
+    };
 }

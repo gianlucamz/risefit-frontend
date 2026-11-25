@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
-import { IconeCheck } from "@/components/PainelUI";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { IconeRelogio } from "@/components/PainelUI";
 import {
-  processarCheckoutAPI,
+  cadastrarAlunoComPlanoAPI,
   obterPlanosAPI,
   obterUsuarioAPI,
-  type CheckoutPayload,
   type UsuarioDetalhes,
 } from "@/services/api";
 import { salvarSessao } from "@/lib/sessao";
@@ -91,28 +90,21 @@ function CadastroConcluidoConteudo() {
   });
 
   const [salvando, setSalvando] = useState(false);
+  const [concluido, setConcluido] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const processamentoIniciadoRef = useRef(false);
 
-  const concluirCadastro = async (destino: string) => {
-    if (salvando) return;
+  const executarCadastroPendente = useCallback(async () => {
+    const pendenteRaw = sessionStorage.getItem("risefit_cadastro_pendente");
+    if (!pendenteRaw) {
+      setConcluido(true);
+      return true;
+    }
+
     setSalvando(true);
     setErro(null);
 
     try {
-      const pendenteRaw = sessionStorage.getItem("risefit_cadastro_pendente");
-
-      if (!pendenteRaw) {
-        const usuarioSessao =
-          localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
-        if (usuarioSessao) {
-          router.push(destino);
-          return;
-        }
-        throw new Error(
-          "Dados do cadastro não encontrados. Por favor, volte para a etapa anterior para preencher seus dados.",
-        );
-      }
-
       const pendente = JSON.parse(pendenteRaw);
 
       const idPlanoParaAssinar = pendente.planoId || plano.id;
@@ -142,16 +134,16 @@ function CadastroConcluidoConteudo() {
         }
       } catch {}
 
-      const payloadCheckout: CheckoutPayload & { planoNome?: string } = {
+      const { usuarioId, assinatura } = await cadastrarAlunoComPlanoAPI({
         usuario: {
           nome: pendente.usuario?.nome || "",
           email: pendente.usuario?.email || "",
           senha: pendente.usuario?.senha || "RiseFit@123",
           dataNascimento: pendente.usuario?.dataNascimento || "2000-01-01",
           telefone: pendente.usuario?.telefone || "",
-          cpf: pendente.usuario?.cpf || "",
+          cpf: pendente.usuario?.cpf || undefined,
           sexo: pendente.usuario?.sexo || "Não informado",
-          planoId: planoIdFinal,
+          cargo: "ALUNO",
         },
         endereco: {
           cep: pendente.endereco?.cep || "",
@@ -162,33 +154,13 @@ function CadastroConcluidoConteudo() {
           numero: pendente.endereco?.numero || "",
           complemento: pendente.endereco?.complemento || undefined,
         },
-        formaPagamento: pendente.formaPagamento || "credito",
-        pagamento: pendente.pagamento || {
-          token: `tok_mock_${Date.now()}`,
-          bandeira: "VISA",
-          ultimosDigitos: "1234",
-        },
         planoId: planoIdFinal,
-        planoNome: pendente.planoNome || plano.nome,
-      };
-
-      const respostaCheckout = await processarCheckoutAPI(payloadCheckout);
-      const resObj = (
-        respostaCheckout && typeof respostaCheckout === "object"
-          ? respostaCheckout
-          : {}
-      ) as Record<string, unknown>;
-
-      const usuarioId =
-        (resObj.usuarioId as number | string | undefined) ||
-        pendente.usuario?.id;
+      });
 
       let usuarioAtualizado: UsuarioDetalhes | null = null;
-      if (usuarioId) {
-        try {
-          usuarioAtualizado = await obterUsuarioAPI(usuarioId);
-        } catch {}
-      }
+      try {
+        usuarioAtualizado = await obterUsuarioAPI(usuarioId);
+      } catch {}
 
       const dadosPlano = {
         id: planoIdFinal,
@@ -198,14 +170,14 @@ function CadastroConcluidoConteudo() {
         duracaoMeses: 1,
       };
 
-      const assinaturaFallback = {
-        id: 1,
-        usuarioId: Number(usuarioId),
+      const assinaturaPendente = {
+        id: assinatura.id,
+        usuarioId,
         planoId: planoIdFinal,
-        dataInicio: new Date().toISOString(),
-        dataFim: null,
-        status: "ATIVA",
-        plano: dadosPlano,
+        dataInicio: assinatura.dataInicio || new Date().toISOString(),
+        dataFim: assinatura.dataFim ?? null,
+        status: "PENDENTE",
+        plano: assinatura.plano || dadosPlano,
       };
 
       salvarSessao(
@@ -221,7 +193,7 @@ function CadastroConcluidoConteudo() {
             usuarioAtualizado?.assinaturas &&
             usuarioAtualizado.assinaturas.length > 0
               ? usuarioAtualizado.assinaturas
-              : [assinaturaFallback],
+              : [assinaturaPendente],
         },
         undefined,
         true,
@@ -235,15 +207,42 @@ function CadastroConcluidoConteudo() {
         sessionStorage.removeItem("risefit_plano_escolhido");
       } catch {}
 
-      router.push(destino);
+      setConcluido(true);
+      return true;
     } catch (err: unknown) {
       const mensagem =
         err instanceof Error
           ? err.message
           : "Ocorreu um erro ao concluir o seu cadastro. Tente novamente.";
       setErro(mensagem);
+      return false;
     } finally {
       setSalvando(false);
+    }
+  }, [plano]);
+
+  useEffect(() => {
+    if (processamentoIniciadoRef.current) return;
+    processamentoIniciadoRef.current = true;
+
+    const timer = setTimeout(() => {
+      void executarCadastroPendente();
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [executarCadastroPendente]);
+
+  const concluirCadastro = async (destino: string) => {
+    if (salvando) return;
+
+    if (concluido) {
+      router.push(destino);
+      return;
+    }
+
+    const ok = await executarCadastroPendente();
+    if (ok) {
+      router.push(destino);
     }
   };
 
@@ -261,16 +260,16 @@ function CadastroConcluidoConteudo() {
 
         <header className="flex flex-col items-center text-center">
           <div className="mb-4 text-brand">
-            <IconeCheck className="h-10 w-10 text-brand" />
+            <IconeRelogio className="h-10 w-10 text-brand" />
           </div>
 
           <h1 className="text-2xl font-bold tracking-tight text-[#0f172a] sm:text-3xl lg:text-[32px]">
-            Tudo certo com seu cadastro!
+            Cadastro concluído!
           </h1>
 
           <p className="mt-3 text-sm leading-relaxed text-gray-500 sm:text-base max-w-md">
-            Seu pagamento foi aprovado e seu plano está ativo. Clique abaixo
-            para concluir e acessar a Área do Aluno.
+            Sua conta foi criada e sua solicitação de plano está pendente de
+            aprovação pelo administrador.
           </p>
         </header>
 
@@ -294,7 +293,9 @@ function CadastroConcluidoConteudo() {
 
             <div className="flex items-center justify-between text-sm sm:text-base">
               <dt className="text-gray-500">Situação</dt>
-              <dd className="font-bold text-[#0f172a]">Ativo</dd>
+              <dd className="font-bold text-[#0f172a]">
+                Pendente de aprovação
+              </dd>
             </div>
           </dl>
 
@@ -307,7 +308,7 @@ function CadastroConcluidoConteudo() {
           <dl className="mt-4">
             <div className="flex items-center justify-between text-sm sm:text-base">
               <dt className="text-gray-500">Próxima cobrança</dt>
-              <dd className="font-bold text-[#0f172a]">A confirmar</dd>
+              <dd className="font-bold text-[#0f172a]">Após aprovação</dd>
             </div>
           </dl>
         </div>
@@ -321,7 +322,7 @@ function CadastroConcluidoConteudo() {
         <div className="mt-6 space-y-3">
           <button
             type="button"
-            onClick={() => concluirCadastro("/area-aluno")}
+            onClick={() => concluirCadastro("/minha-conta")}
             disabled={salvando}
             className="w-full cursor-pointer rounded-lg bg-brand py-3.5 px-6 text-center text-base font-bold text-white shadow-sm transition-all duration-150 hover:bg-[#6d28d9] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
@@ -349,18 +350,18 @@ function CadastroConcluidoConteudo() {
                 Concluindo cadastro...
               </span>
             ) : (
-              "Acessar Área do Aluno"
+              "Ver minha conta"
             )}
           </button>
 
           <div className="text-left pt-1">
             <button
               type="button"
-              onClick={() => concluirCadastro("/minha-conta")}
+              onClick={() => concluirCadastro("/area-aluno")}
               disabled={salvando}
               className="inline-block cursor-pointer text-sm font-semibold text-brand hover:underline disabled:opacity-50 transition-colors"
             >
-              Ver minha conta
+              Acessar Área do Aluno
             </button>
           </div>
         </div>

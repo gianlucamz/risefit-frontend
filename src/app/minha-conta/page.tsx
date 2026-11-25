@@ -143,20 +143,30 @@ export default function MinhaContaPage() {
 
   const assinaturaAtiva =
     assinaturasDisponiveis.find((a) => a.status === "ATIVA") || null;
+  const assinaturaPendente = !assinaturaAtiva
+    ? assinaturasDisponiveis.find((a) => a.status === "PENDENTE") || null
+    : null;
+  const assinaturaExibida = assinaturaAtiva || assinaturaPendente;
 
-  const plano: PlanoExibicao | null = assinaturaAtiva?.plano || null;
+  const plano: PlanoExibicao | null = assinaturaExibida?.plano || null;
 
-  const situacaoPlano = assinaturaAtiva ? "Ativo" : "Sem plano";
+  const situacaoPlano = assinaturaAtiva
+    ? "Ativo"
+    : assinaturaPendente
+      ? "Pendente"
+      : "Sem plano";
 
-  const dataFimFormatada = assinaturaAtiva?.dataFim
-    ? new Date(assinaturaAtiva.dataFim).toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      })
-    : plano
-      ? "Renovação mensal contínua"
-      : "—";
+  const dataFimFormatada = assinaturaPendente
+    ? "Aguardando aprovação"
+    : assinaturaAtiva?.dataFim
+      ? new Date(assinaturaAtiva.dataFim).toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        })
+      : plano
+        ? "Renovação mensal contínua"
+        : "—";
 
   return (
     <main className="bg-[#f8f8f8] px-6 py-10 lg:py-14">
@@ -222,15 +232,21 @@ export default function MinhaContaPage() {
 
             <Cartao
               titulo="Plano atual"
-              acao={<Selo>{situacaoPlano}</Selo>}
+              acao={
+                <Selo tom={assinaturaPendente ? "alerta" : "neutro"}>
+                  {situacaoPlano}
+                </Selo>
+              }
               className="flex h-full flex-col shadow-sm"
             >
               <p className="text-2xl font-semibold text-dark lg:text-3xl">
                 {plano?.nome || "Sem plano ativo"}
               </p>
               <p className="mt-1 mb-3 text-sm text-gray-500">
-                {plano?.descricao ||
-                  "Assine um dos nossos planos para ter acesso aos treinos personalizados."}
+                {assinaturaPendente
+                  ? "Sua solicitação de plano está em análise e será ativada após a aprovação do administrador."
+                  : plano?.descricao ||
+                    "Assine um dos nossos planos para ter acesso aos treinos personalizados."}
               </p>
               <dl>
                 <LinhaInfo
