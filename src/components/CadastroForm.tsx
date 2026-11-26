@@ -18,9 +18,6 @@ export function formatarTelefone(valor: string): string {
 export function validarEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
-
-/* ---------- Peças visuais compartilhadas pelas telas de cadastro/acesso ---------- */
-
 interface BotaoVoltarProps {
   onClick?: () => void;
   ariaLabel?: string;
@@ -83,7 +80,6 @@ export function LogoRiseFit({ className = "" }: { className?: string }) {
   );
 }
 
-/** Classes base dos campos (input/select) das telas de cadastro e acesso. */
 export function classesCampo({
   erro,
   compacto = false,
@@ -105,22 +101,30 @@ export function classesCampo({
 export function RotuloCampo({
   htmlFor,
   compacto = false,
+  obrigatorio = false,
   children,
 }: {
   htmlFor: string;
   compacto?: boolean;
+  obrigatorio?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <label
       htmlFor={htmlFor}
-      className={
+      className={`mb-2 flex w-full items-center justify-between ${
         compacto
-          ? "mb-1.25 block text-xs leading-4 font-medium text-black"
-          : "mb-2 block text-[15px] leading-5 font-semibold text-dark"
-      }
+          ? "text-xs leading-4 font-medium text-black"
+          : "text-[15px] leading-5 font-semibold text-dark"
+      }`}
     >
-      {children}
+      <span>{children}</span>
+
+      {obrigatorio && (
+        <span className="font-bold text-red-400 mr-3" aria-hidden="true">
+          *
+        </span>
+      )}
     </label>
   );
 }
@@ -150,11 +154,8 @@ interface CampoFormularioProps {
   autoComplete?: string;
   inputMode?: "text" | "email" | "tel" | "numeric";
   obrigatorio?: boolean;
-  /** Campo menor usado dentro do modal de pagamento. */
   compacto?: boolean;
-  /** Classe Tailwind da cor do placeholder (ex.: "placeholder:text-[#6b7280]"). */
   corPlaceholder?: string;
-  /** Ícone exibido à esquerda do texto, dentro do campo. */
   icone?: React.ReactNode;
 }
 
@@ -175,7 +176,7 @@ export function CampoFormulario({
 }: CampoFormularioProps) {
   return (
     <div className="w-full text-left">
-      <RotuloCampo htmlFor={id} compacto={compacto}>
+      <RotuloCampo htmlFor={id} compacto={compacto} obrigatorio={obrigatorio}>
         {rotulo}
       </RotuloCampo>
       <div className="relative">
@@ -221,7 +222,6 @@ interface CampoSelectProps {
   erro?: string;
   obrigatorio?: boolean;
   compacto?: boolean;
-  /** "cinza": chevron cinza (endereço/modal); "escuro": chevron escuro (complemento). */
   chevron?: "cinza" | "escuro";
 }
 
@@ -239,7 +239,7 @@ export function CampoSelect({
 }: CampoSelectProps) {
   return (
     <div className="w-full text-left">
-      <RotuloCampo htmlFor={id} compacto={compacto}>
+      <RotuloCampo htmlFor={id} compacto={compacto} obrigatorio={obrigatorio}>
         {rotulo}
       </RotuloCampo>
       <div className="relative">
@@ -259,11 +259,7 @@ export function CampoSelect({
             {placeholder}
           </option>
           {opcoes.map((opcao) => (
-            <option
-              key={opcao.valor}
-              value={opcao.valor}
-              className="text-dark"
-            >
+            <option key={opcao.valor} value={opcao.valor} className="text-dark">
               {opcao.rotulo}
             </option>
           ))}
@@ -337,7 +333,6 @@ export function AvisoPrivacidade() {
   );
 }
 
-/** Botão roxo arredondado (pílula) das etapas de cadastro. */
 export function BotaoCadastro({
   carregando,
   children,
@@ -384,7 +379,6 @@ export function BotaoCadastro({
   );
 }
 
-/** Título grande centralizado das etapas de cadastro. */
 export function TituloCadastro({
   children,
   className = "",
@@ -401,7 +395,6 @@ export function TituloCadastro({
   );
 }
 
-/** Cabeçalho "botão voltar + título + logo" (etapas 1 e 3 do cadastro). */
 export function CabecalhoCadastro({
   titulo,
   voltarHref,
@@ -410,6 +403,7 @@ export function CabecalhoCadastro({
   titulo: React.ReactNode;
   voltarHref?: string;
   voltarAriaLabel?: string;
+  mostrarAvisoObrigatorio?: boolean;
 }) {
   return (
     <div className="relative">
@@ -503,7 +497,10 @@ export default function CadastroForm({
       const params = new URLSearchParams(window.location.search);
       const planoParam = params.get("plano");
       if (planoParam) {
-        sessionStorage.setItem("risefit_plano_escolhido", planoParam.toLowerCase());
+        sessionStorage.setItem(
+          "risefit_plano_escolhido",
+          planoParam.toLowerCase(),
+        );
       }
     } catch {}
   }, []);
@@ -632,15 +629,24 @@ export default function CadastroForm({
                 inputMode="email"
                 aoMudar={(v) => {
                   setEmail(v);
-                  if (erros.email)
-                    setErros((prev) => ({ ...prev, email: "" }));
+                  if (erros.email) setErros((prev) => ({ ...prev, email: "" }));
                 }}
                 erro={erros.email}
               />
 
               <CampoSenha
                 id="senha"
-                rotulo="Senha de acesso"
+                rotulo={
+                  <>
+                    Senha de acesso
+                    <span
+                      className="ml-1 font-bold text-red-600"
+                      aria-hidden="true"
+                    >
+                      *
+                    </span>
+                  </>
+                }
                 valor={senha}
                 placeholder="Crie uma senha (mínimo 8 caracteres)"
                 autoComplete="new-password"

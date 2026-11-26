@@ -157,8 +157,8 @@ export default function PaymentCardModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="w-full max-w-xl rounded-2xl bg-white p-6 sm:p-8 shadow-2xl transition-all duration-200">
-        <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+      <div className="w-full max-w-xl rounded-2xl bg-white p-6 sm:p-8 shadow-2xl transition-all duration-200 max-h-[92vh] overflow-y-auto">
+        <div className="flex items-start justify-between pb-4 border-b border-gray-100">
           <div>
             <h2 className="text-xl font-bold text-gray-900">{tituloModal}</h2>
             <div className="mt-2">

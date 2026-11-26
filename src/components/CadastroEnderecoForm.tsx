@@ -220,6 +220,9 @@ function CheckboxTermos({ marcado, aoMudar, erro }: CheckboxTermosProps) {
           </Link>
           , enviando sua solicitação de plano para análise e ativação na
           plataforma RiseFit.
+          <span className="ml-1 font-bold text-red-600" aria-hidden="true">
+            *
+          </span>
         </span>
       </label>
       {erro && (
@@ -730,7 +733,7 @@ export default function CadastroEnderecoForm() {
           <div className="w-10 sm:hidden" aria-hidden="true" />
         </div>
 
-        <div className="mt-5 sm:mt-6">
+        <div className="mt-5 sm:mt-6 flex flex-col items-center">
           <LogoRiseFit />
         </div>
       </div>
@@ -787,6 +790,12 @@ export default function CadastroEnderecoForm() {
             <section>
               <h2 className="text-base sm:text-lg font-bold text-gray-900">
                 Escolha seu plano
+                <span
+                  className="ml-1 font-bold text-red-600"
+                  aria-hidden="true"
+                >
+                  *
+                </span>
               </h2>
               <div
                 className="mt-4 space-y-3"
@@ -945,6 +954,12 @@ export default function CadastroEnderecoForm() {
             <section>
               <h2 className="text-base sm:text-lg font-bold text-gray-900">
                 Qual sua forma de pagamento?
+                <span
+                  className="ml-1 font-bold text-red-600"
+                  aria-hidden="true"
+                >
+                  *
+                </span>
               </h2>
 
               <div className="mt-3 flex items-center gap-2">

@@ -43,7 +43,7 @@ export function CampoSenha({
   autoComplete = "current-password",
 }: {
   id: string;
-  rotulo: string;
+  rotulo: React.ReactNode;
   valor: string;
   placeholder: string;
   aoMudar: (novoValor: string) => void;
@@ -91,7 +91,10 @@ export function CampoSenha({
         </button>
       </div>
       {erro ? (
-        <p id={`${id}-erro`} className="mt-1.5 text-xs font-medium text-red-600">
+        <p
+          id={`${id}-erro`}
+          className="mt-1.5 text-xs font-medium text-red-600"
+        >
           {erro}
         </p>
       ) : (
