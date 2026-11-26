@@ -158,7 +158,7 @@ export function AlertaErro({ children }: { children: React.ReactNode }) {
   return (
     <p
       role="alert"
-      className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-left text-sm text-red-700"
+      className="px-4 py-3 text-left text-sm text-red-700"
     >
       {children}
     </p>
@@ -169,7 +169,7 @@ export function AlertaSucesso({ children }: { children: React.ReactNode }) {
   return (
     <p
       role="status"
-      className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-left text-sm text-green-800"
+      className="px-4 py-3 text-left text-sm text-brand"
     >
       {children}
     </p>
