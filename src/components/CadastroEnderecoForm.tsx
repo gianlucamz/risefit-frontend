@@ -12,57 +12,49 @@ import PaymentCardModal, { DadosCartao } from "@/components/PaymentCardModal";
 import { useRouter } from "next/navigation";
 import { obterPlanosAPI } from "@/services/api";
 
-const ESTADOS_BR = [
-  { valor: "AC", rotulo: "Acre" },
-  { valor: "AL", rotulo: "Alagoas" },
-  { valor: "AP", rotulo: "Amapá" },
-  { valor: "AM", rotulo: "Amazonas" },
-  { valor: "BA", rotulo: "Bahia" },
-  { valor: "CE", rotulo: "Ceará" },
-  { valor: "DF", rotulo: "Distrito Federal" },
-  { valor: "ES", rotulo: "Espírito Santo" },
-  { valor: "GO", rotulo: "Goiás" },
-  { valor: "MA", rotulo: "Maranhão" },
-  { valor: "MT", rotulo: "Mato Grosso" },
-  { valor: "MS", rotulo: "Mato Grosso do Sul" },
-  { valor: "MG", rotulo: "Minas Gerais" },
-  { valor: "PA", rotulo: "Pará" },
-  { valor: "PB", rotulo: "Paraíba" },
-  { valor: "PR", rotulo: "Paraná" },
-  { valor: "PE", rotulo: "Pernambuco" },
-  { valor: "PI", rotulo: "Piauí" },
-  { valor: "RJ", rotulo: "Rio de Janeiro" },
-  { valor: "RN", rotulo: "Rio Grande do Norte" },
-  { valor: "RS", rotulo: "Rio Grande do Sul" },
-  { valor: "RO", rotulo: "Rondônia" },
-  { valor: "RR", rotulo: "Roraima" },
-  { valor: "SC", rotulo: "Santa Catarina" },
-  { valor: "SP", rotulo: "São Paulo" },
-  { valor: "SE", rotulo: "Sergipe" },
-  { valor: "TO", rotulo: "Tocantins" },
-];
+export const ESTADO = "SP";
 
-const CIDADES_POR_ESTADO: Record<string, { valor: string; rotulo: string }[]> =
-  {
-    SP: [
-      { valor: "São Paulo", rotulo: "São Paulo" },
-      { valor: "Campinas", rotulo: "Campinas" },
-      { valor: "Santos", rotulo: "Santos" },
-      { valor: "Taubaté", rotulo: "Taubaté" },
-      { valor: "Caraguatatuba", rotulo: "Caraguatatuba" },
-      { valor: "São José dos Campos", rotulo: "São José dos Campos" },
-    ],
-    RJ: [
-      { valor: "Rio de Janeiro", rotulo: "Rio de Janeiro" },
-      { valor: "Niterói", rotulo: "Niterói" },
-      { valor: "Petrópolis", rotulo: "Petrópolis" },
-    ],
-    MG: [
-      { valor: "Belo Horizonte", rotulo: "Belo Horizonte" },
-      { valor: "Uberlândia", rotulo: "Uberlândia" },
-      { valor: "Juiz de Fora", rotulo: "Juiz de Fora" },
-    ],
-  };
+export const CIDADES = [
+  { valor: "Aparecida", rotulo: "Aparecida" },
+  { valor: "Arapeí", rotulo: "Arapeí" },
+  { valor: "Areias", rotulo: "Areias" },
+  { valor: "Bananal", rotulo: "Bananal" },
+  { valor: "Caçapava", rotulo: "Caçapava" },
+  { valor: "Cachoeira Paulista", rotulo: "Cachoeira Paulista" },
+  { valor: "Campos do Jordão", rotulo: "Campos do Jordão" },
+  { valor: "Canas", rotulo: "Canas" },
+  { valor: "Caraguatatuba", rotulo: "Caraguatatuba" },
+  { valor: "Cruzeiro", rotulo: "Cruzeiro" },
+  { valor: "Cunha", rotulo: "Cunha" },
+  { valor: "Guaratinguetá", rotulo: "Guaratinguetá" },
+  { valor: "Igaratá", rotulo: "Igaratá" },
+  { valor: "Ilhabela", rotulo: "Ilhabela" },
+  { valor: "Jacareí", rotulo: "Jacareí" },
+  { valor: "Jambeiro", rotulo: "Jambeiro" },
+  { valor: "Lagoinha", rotulo: "Lagoinha" },
+  { valor: "Lavrinhas", rotulo: "Lavrinhas" },
+  { valor: "Lorena", rotulo: "Lorena" },
+  { valor: "Monteiro Lobato", rotulo: "Monteiro Lobato" },
+  { valor: "Natividade da Serra", rotulo: "Natividade da Serra" },
+  { valor: "Paraibuna", rotulo: "Paraibuna" },
+  { valor: "Pindamonhangaba", rotulo: "Pindamonhangaba" },
+  { valor: "Piquete", rotulo: "Piquete" },
+  { valor: "Potim", rotulo: "Potim" },
+  { valor: "Queluz", rotulo: "Queluz" },
+  { valor: "Redenção da Serra", rotulo: "Redenção da Serra" },
+  { valor: "Roseira", rotulo: "Roseira" },
+  { valor: "Santa Branca", rotulo: "Santa Branca" },
+  { valor: "Santo Antônio do Pinhal", rotulo: "Santo Antônio do Pinhal" },
+  { valor: "São Bento do Sapucaí", rotulo: "São Bento do Sapucaí" },
+  { valor: "São José do Barreiro", rotulo: "São José do Barreiro" },
+  { valor: "São José dos Campos", rotulo: "São José dos Campos" },
+  { valor: "São Luiz do Paraitinga", rotulo: "São Luiz do Paraitinga" },
+  { valor: "São Sebastião", rotulo: "São Sebastião" },
+  { valor: "Silveiras", rotulo: "Silveiras" },
+  { valor: "Taubaté", rotulo: "Taubaté" },
+  { valor: "Tremembé", rotulo: "Tremembé" },
+  { valor: "Ubatuba", rotulo: "Ubatuba" },
+];
 
 export function formatarCEP(valor: string): string {
   const d = valor.replace(/\D/g, "").slice(0, 8);
@@ -226,8 +218,8 @@ function CheckboxTermos({ marcado, aoMudar, erro }: CheckboxTermosProps) {
           >
             termos de adesão
           </Link>
-          , o que automaticamente ativará o seu plano e permitirá que você tenha
-          acesso à plataforma RiseFit.
+          , enviando sua solicitação de plano para análise e ativação na
+          plataforma RiseFit.
         </span>
       </label>
       {erro && (
@@ -376,7 +368,6 @@ function CardPlano({
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
-            {/* Botão de info (i) discreto */}
             <button
               type="button"
               onClick={aoAlternarInfo}
@@ -515,9 +506,6 @@ export default function CadastroEnderecoForm() {
       ? formatarCEP(dadosPendenteSalvo.endereco.cep)
       : "",
   );
-  const [estado, setEstado] = useState(
-    () => dadosPendenteSalvo?.endereco?.estado || "",
-  );
   const [cidade, setCidade] = useState(
     () => dadosPendenteSalvo?.endereco?.cidade || "",
   );
@@ -543,7 +531,6 @@ export default function CadastroEnderecoForm() {
   const [sucesso] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
 
-  /* ── Estados do plano ── */
   const [planos, setPlanos] = useState<InfoPlanoVisual[]>(PLANOS_PADRAO);
 
   useEffect(() => {
@@ -569,6 +556,7 @@ export default function CadastroEnderecoForm() {
       ativo = false;
     };
   }, []);
+
   const [planoSelecionado, setPlanoSelecionado] = useState<string>(() => {
     if (typeof window === "undefined") return PLANOS_PADRAO[0].slug;
     try {
@@ -607,14 +595,6 @@ export default function CadastroEnderecoForm() {
     }
   });
 
-  const cidadesDoEstado = estado ? CIDADES_POR_ESTADO[estado] || [] : [];
-
-  const handleEstadoChange = (novoEstado: string) => {
-    setEstado(novoEstado);
-    setCidade("");
-    if (erros.estado) setErros((prev) => ({ ...prev, estado: "" }));
-  };
-
   const validar = (): boolean => {
     const novosErros: Record<string, string> = {};
 
@@ -623,10 +603,6 @@ export default function CadastroEnderecoForm() {
       novosErros.cep = "Por favor, informe seu CEP.";
     } else if (cepLimpo.length !== 8) {
       novosErros.cep = "Informe um CEP válido com 8 dígitos.";
-    }
-
-    if (!estado) {
-      novosErros.estado = "Selecione seu estado.";
     }
 
     if (!cidade) {
@@ -701,7 +677,7 @@ export default function CadastroEnderecoForm() {
         },
         endereco: {
           cep: cep.replace(/\D/g, ""),
-          estado,
+          estado: ESTADO,
           cidade,
           bairro: bairro.trim(),
           rua: rua.trim(),
@@ -849,6 +825,10 @@ export default function CadastroEnderecoForm() {
               <h2 className="text-base sm:text-lg font-bold text-gray-900">
                 Qual seu endereço de cobrança?
               </h2>
+              <p className="mt-1 text-xs sm:text-sm text-gray-500">
+                Atendimento presencial disponível para o Litoral Norte e Vale do
+                Paraíba — SP.
+              </p>
 
               <div className="mt-5 space-y-5">
                 <div>
@@ -878,30 +858,19 @@ export default function CadastroEnderecoForm() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  <CampoSelect
-                    id="estado"
-                    rotulo="Estado"
-                    valor={estado}
-                    placeholder="Selecione seu estado"
-                    opcoes={ESTADOS_BR}
-                    aoMudar={handleEstadoChange}
-                    erro={erros.estado}
-                  />
-                  <CampoSelect
-                    id="cidade"
-                    rotulo="Cidade"
-                    valor={cidade}
-                    placeholder="Selecione sua cidade"
-                    opcoes={cidadesDoEstado}
-                    aoMudar={(v) => {
-                      setCidade(v);
-                      if (erros.cidade)
-                        setErros((prev) => ({ ...prev, cidade: "" }));
-                    }}
-                    erro={erros.cidade}
-                  />
-                </div>
+                <CampoSelect
+                  id="cidade"
+                  rotulo="Cidade (SP)"
+                  valor={cidade}
+                  placeholder="Selecione sua cidade"
+                  opcoes={CIDADES}
+                  aoMudar={(v) => {
+                    setCidade(v);
+                    if (erros.cidade)
+                      setErros((prev) => ({ ...prev, cidade: "" }));
+                  }}
+                  erro={erros.cidade}
+                />
 
                 <CampoFormulario
                   id="bairro"
