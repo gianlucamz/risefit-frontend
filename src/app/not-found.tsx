@@ -3,7 +3,6 @@ import Link from "next/link";
 const botao =
   "inline-flex h-12 items-center justify-center rounded-xl px-6 text-[15px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 
-// Página 404 do Next.js (App Router)
 export default function NotFound() {
   return (
     <main className="bg-[#f8f8f9] px-4 pt-8 pb-20 sm:px-6 lg:pt-11.75 lg:pb-36">

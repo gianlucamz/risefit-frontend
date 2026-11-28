@@ -1,12 +1,5 @@
 import Link from "next/link";
 
-// Peças visuais reaproveitadas nas páginas internas (Área do Aluno, Minha conta,
-// Carrinho, Assinatura e estados de confirmação). Só visual: nenhuma chamada de API.
-
-/* ---------- Layout da página ---------- */
-
-// Medidas do layout (1440px): conteúdo de 1200px (ou 920px no modo "estreita"),
-// link de voltar 48px abaixo do header, título 38px e cartões 28px abaixo do subtítulo.
 export function PaginaInterna({
   voltar,
   titulo,
@@ -73,8 +66,6 @@ export function PaginaInterna({
   );
 }
 
-/* ---------- Cartões ---------- */
-
 export function Cartao({
   titulo,
   acao,
@@ -87,7 +78,6 @@ export function Cartao({
   acao?: React.ReactNode;
   destaque?: boolean;
   className?: string;
-  // Espaço entre o título e o conteúdo (muda conforme a tela do layout)
   classeCabecalho?: string;
   children: React.ReactNode;
 }) {
@@ -114,7 +104,6 @@ export function Cartao({
   );
 }
 
-// Linha "rótulo .......... valor" usada nos resumos (42px de altura no layout)
 export function LinhaInfo({
   rotulo,
   valor,
@@ -162,7 +151,6 @@ export function Selo({
   );
 }
 
-// Caixa de seleção no estilo do layout (18px, borda cinza, marcada em roxo)
 export function CaixaSelecao({
   className = "",
   ...props
@@ -175,8 +163,6 @@ export function CaixaSelecao({
     />
   );
 }
-
-/* ---------- Botões ---------- */
 
 type VarianteBotao = "primario" | "secundario" | "perigo";
 
@@ -256,8 +242,6 @@ export function LinkSeta({
   );
 }
 
-/* ---------- Painel de estado (confirmação, vazio, erro) ---------- */
-
 export function PainelEstado({
   rotulo,
   icone,
@@ -299,9 +283,7 @@ export function PainelEstado({
       {children && <div className="mt-5 flex flex-col gap-4">{children}</div>}
     </div>
   );
-}
-
-/* ---------- Ícones ---------- */
+} 
 
 const baseIcone = {
   viewBox: "0 0 24 24",

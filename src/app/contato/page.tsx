@@ -3,9 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 
-// Página de contato (Atendimento). O header e o footer já vêm do layout do site.
-// Âncoras usadas pelo footer: #trabalhe-conosco, #contato, #central-de-ajuda e #faq.
-
 const areasInteresse = [
   "Recepção e atendimento",
   "Musculação e treino",
@@ -73,24 +70,25 @@ const perguntas = [
   },
 ];
 
-// Estilos repetidos
 const cartao =
   "scroll-mt-12 rounded-3xl border border-[#e4e6eb] bg-white px-5 py-6 sm:scroll-mt-28 sm:px-10 sm:py-10";
 const tituloCartao =
   "text-[22px] leading-[30px] font-bold text-[#0a0c11] sm:text-[32px] sm:leading-10";
-const textoCartao = "mt-[11px] text-sm leading-[22px] text-[#6b7280] sm:text-base sm:leading-6";
+const textoCartao =
+  "mt-[11px] text-sm leading-[22px] text-[#6b7280] sm:text-base sm:leading-6";
 
 export default function ContatoPage() {
   return (
-    <main className="bg-white px-4 pt-10 pb-14 sm:px-6 lg:pt-[55px] lg:pb-[89px]">
-      <div className="mx-auto w-full max-w-[1200px]">
-        <p className="text-sm leading-5 font-semibold text-brand">Atendimento</p>
-        <h1 className="mt-3 text-[28px] leading-[35px] font-bold text-[#0a0c11] lg:mt-[19px] lg:text-[48px] lg:leading-14">
+    <main className="bg-white px-4 pt-10 pb-14 sm:px-6 lg:pt-13.75 lg:pb-22.25">
+      <div className="mx-auto w-full max-w-300">
+        <p className="text-sm leading-5 font-semibold text-brand">
+          Atendimento
+        </p>
+        <h1 className="mt-3 text-[28px] leading-8.75 font-bold text-[#0a0c11] lg:mt-4.75 lg:text-[48px] lg:leading-14">
           Como podemos ajudar hoje?
         </h1>
 
-        {/* Formulários */}
-        <div className="mt-8 grid items-start gap-6 lg:mt-[54px] lg:grid-cols-[minmax(0,600fr)_minmax(0,568fr)] lg:gap-8">
+        <div className="mt-8 grid items-start gap-6 lg:mt-13.5 lg:grid-cols-[minmax(0,600fr)_minmax(0,568fr)] lg:gap-8">
           <CartaoFormulario
             id="trabalhe-conosco"
             titulo="Trabalhe conosco"
@@ -139,14 +137,14 @@ export default function ContatoPage() {
               secundario: { href: "/", texto: "Voltar para Página Inicial" },
             }}
           >
-            <div className="mt-6 rounded-[18px] bg-[#f8f6ff] px-5 pt-5 pb-[22px]">
+            <div className="mt-6 rounded-[18px] px-5 pt-5 pb-5.5">
               <p className="text-sm leading-5 font-semibold text-[#0a0c11]">
                 Informações de atendimento
               </p>
               <ul className="mt-3 space-y-3.5 text-sm leading-5 text-[#6b7280]">
                 <li className="flex items-start gap-3">
                   <span className="mt-px text-brand">
-                    <IconePino className="h-[18px] w-[18px]" />
+                    <IconePino className="h-4.5 w-4.5" />
                   </span>
                   Avenida Acre, 243 – Indaiá, Caraguatatuba – SP
                 </li>
@@ -161,42 +159,36 @@ export default function ContatoPage() {
           </CartaoFormulario>
         </div>
 
-        {/* Central de ajuda */}
-        <section
-          id="central-de-ajuda"
-          className={`mt-6 lg:mt-[46px] ${cartao}`}
-        >
+        <section id="central-de-ajuda" className={`mt-6 lg:mt-11.5 ${cartao}`}>
           <h2 className={tituloCartao}>Central de ajuda</h2>
           <p className={textoCartao}>
-            Encontre respostas rápidas para os principais temas da sua jornada na
-            RiseFit.
+            Encontre respostas rápidas para os principais temas da sua jornada
+            na RiseFit.
           </p>
 
-          <div className="mt-6 grid gap-3 lg:grid-cols-2">
+          <ul className="mt-6 divide-y divide-[#e4e6eb]">
             {centralDeAjuda.map((item) => (
-              <article
-                key={item.titulo}
-                className="flex flex-col items-start gap-4 rounded-[18px] bg-[#f9f9fb] p-4 sm:flex-row sm:items-center sm:py-5 sm:pr-6 sm:pl-5"
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand text-white">
-                  {item.icone}
-                </span>
-                <div>
+              <li key={item.titulo} className="py-4 first:pt-0 last:pb-0">
+                <div className="flex items-center gap-3">
+                  <span className="flex shrink-0 items-center justify-center text-brand">
+                    {item.icone}
+                  </span>
                   <h3 className="text-base leading-6 font-semibold text-[#0a0c11]">
                     {item.titulo}
                   </h3>
-                  <p className="mt-0.5 text-sm leading-[22px] text-[#6b7280]">
-                    {item.descricao}
-                  </p>
                 </div>
-              </article>
+                <p className="mt-1 text-sm leading-5.5 text-[#6b7280]">
+                  {item.descricao}
+                </p>
+              </li>
             ))}
-          </div>
+          </ul>
         </section>
 
-        {/* Perguntas frequentes */}
-        <section id="faq" className={`mt-6 lg:mt-[46px] ${cartao}`}>
-          <h2 className={`sm:text-center ${tituloCartao}`}>Perguntas frequentes</h2>
+        <section id="faq" className={`mt-6 lg:mt-11.5 ${cartao}`}>
+          <h2 className={`sm:text-center ${tituloCartao}`}>
+            Perguntas frequentes
+          </h2>
           <p className={`sm:text-center ${textoCartao}`}>
             Respostas rápidas para facilitar sua navegação antes de entrar em
             contato.
@@ -208,13 +200,13 @@ export default function ContatoPage() {
                 key={item.pergunta}
                 className="group rounded-2xl border border-[#e4e6eb] bg-white"
               >
-                <summary className="flex min-h-[62px] cursor-pointer list-none items-center justify-between gap-4 py-3 pr-6 pl-5 text-base leading-6 font-semibold text-[#0a0c11] [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-15.5 cursor-pointer list-none items-center justify-between gap-4 py-3 pr-6 pl-5 text-base leading-6 font-semibold text-[#0a0c11] [&::-webkit-details-marker]:hidden">
                   {item.pergunta}
                   <span className="shrink-0 text-[#6b7280] transition-transform group-open:rotate-180">
                     <IconeSeta />
                   </span>
                 </summary>
-                <p className="-mt-1 px-5 pb-5 text-sm leading-[22px] text-[#6b7280] sm:text-base sm:leading-6">
+                <p className="-mt-1 px-5 pb-5 text-sm leading-5.5 text-[#6b7280] sm:text-base sm:leading-6">
                   {item.resposta}
                 </p>
               </details>
@@ -226,9 +218,12 @@ export default function ContatoPage() {
   );
 }
 
-/* ---------- Cartão com formulário (usado em "Trabalhe conosco" e "Contato") ---------- */
-
-type Valores = { nome: string; email: string; selecao: string; mensagem: string };
+type Valores = {
+  nome: string;
+  email: string;
+  selecao: string;
+  mensagem: string;
+};
 
 type Sucesso = {
   cabecalho: string;
@@ -236,7 +231,6 @@ type Sucesso = {
   descricao: string;
   observacao: string;
   primario: { href: string; texto: string };
-  // Sem href, o botão volta para o formulário (continua na página de atendimento)
   secundario: { href?: string; texto: string };
 };
 
@@ -279,7 +273,8 @@ function CartaoFormulario({
 
     const novos: Partial<Valores> = {};
     if (valores.nome.trim().length < 3) novos.nome = "Informe seu nome.";
-    if (!/^\S+@\S+\.\S+$/.test(valores.email)) novos.email = "Informe um e-mail válido.";
+    if (!/^\S+@\S+\.\S+$/.test(valores.email))
+      novos.email = "Informe um e-mail válido.";
     if (!valores.selecao) novos.selecao = "Selecione uma opção.";
     if (valores.mensagem.trim().length < 10)
       novos.mensagem = "Escreva uma mensagem com pelo menos 10 caracteres.";
@@ -287,7 +282,6 @@ function CartaoFormulario({
     setErros(novos);
     if (Object.keys(novos).length > 0) return;
 
-    // TODO: enviar os dados para a API / serviço de e-mail quando existir.
     setValores(vazio);
     setEnviado(true);
   }
@@ -297,27 +291,30 @@ function CartaoFormulario({
       <section
         id={id}
         role="status"
-        className="scroll-mt-28 rounded-[20px] border border-[#e4e6eb] bg-white px-5 pt-[29px] pb-[27px] sm:px-7"
+        className="scroll-mt-28 rounded-[20px] border border-[#e4e6eb] bg-white px-5 pt-7.25 pb-6.75 sm:px-7"
       >
         <h2 className="text-lg leading-7 font-semibold text-[#0a0c11] sm:text-[22px]">
           {sucesso.cabecalho}
         </h2>
-        <div className="mt-[25px] flex flex-col items-center text-center">
+        <div className="mt-6.25 flex flex-col items-center text-center">
           <span className="text-brand">
             <IconeCheck />
           </span>
-          <p className="mt-[21px] text-2xl leading-8 font-semibold text-[#0a0c11] sm:text-[30px] sm:leading-9">
+          <p className="mt-5.25 text-2xl leading-8 font-semibold text-[#0a0c11] sm:text-[30px] sm:leading-9">
             {sucesso.titulo}
           </p>
-          <p className="mt-[21px] text-base leading-6 text-[#6b7280]">
+          <p className="mt-5.25 text-base leading-6 text-[#6b7280]">
             {sucesso.descricao}
           </p>
         </div>
-        <p className="mt-[21px] text-sm leading-5 text-[#6b7280]">
+        <p className="mt-5.25 text-sm leading-5 text-[#6b7280]">
           {sucesso.observacao}
         </p>
-        <div className="mt-[21px] flex flex-col gap-5">
-          <Link href={sucesso.primario.href} className={`${estiloBotao} bg-brand text-white hover:bg-[#6d28d9]`}>
+        <div className="mt-5.25 flex flex-col gap-5">
+          <Link
+            href={sucesso.primario.href}
+            className={`${estiloBotao} bg-brand text-white hover:bg-[#6d28d9]`}
+          >
             {sucesso.primario.texto}
           </Link>
           {sucesso.secundario.href ? (
@@ -346,7 +343,11 @@ function CartaoFormulario({
       <h2 className={tituloCartao}>{titulo}</h2>
       <p className={textoCartao}>{descricao}</p>
 
-      <form onSubmit={aoEnviar} noValidate className="mt-6 flex flex-col gap-[13px]">
+      <form
+        onSubmit={aoEnviar}
+        noValidate
+        className="mt-6 flex flex-col gap-3.25"
+      >
         <Campo id={`${campoId}-nome`} rotulo="Nome completo" erro={erros.nome}>
           <input
             id={`${campoId}-nome`}
@@ -373,7 +374,11 @@ function CartaoFormulario({
           />
         </Campo>
 
-        <Campo id={`${campoId}-selecao`} rotulo={rotuloSelecao} erro={erros.selecao}>
+        <Campo
+          id={`${campoId}-selecao`}
+          rotulo={rotuloSelecao}
+          erro={erros.selecao}
+        >
           <select
             id={`${campoId}-selecao`}
             value={valores.selecao}
@@ -392,21 +397,25 @@ function CartaoFormulario({
           </select>
         </Campo>
 
-        <Campo id={`${campoId}-mensagem`} rotulo="Mensagem" erro={erros.mensagem}>
+        <Campo
+          id={`${campoId}-mensagem`}
+          rotulo="Mensagem"
+          erro={erros.mensagem}
+        >
           <textarea
             id={`${campoId}-mensagem`}
             rows={4}
             placeholder={placeholderMensagem}
             value={valores.mensagem}
             onChange={(e) => atualizar("mensagem", e.target.value)}
-            className={`${estiloCampo(erros.mensagem)} block h-[142px] resize-none py-4 leading-6`}
+            className={`${estiloCampo(erros.mensagem)} block h-35.5 resize-none py-4 leading-6`}
             {...ariaErro(`${campoId}-mensagem`, erros.mensagem)}
           />
         </Campo>
 
         <button
           type="submit"
-          className="mt-[10px] h-[52px] w-full cursor-pointer rounded-xl bg-brand text-base font-semibold text-white transition-colors hover:bg-[#6d28d9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="mt-2.5 h-13 w-full cursor-pointer rounded-xl bg-brand text-base font-semibold text-white transition-colors hover:bg-[#6d28d9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           {botao}
         </button>
@@ -461,8 +470,6 @@ function ariaErro(id: string, erro?: string) {
     "aria-describedby": erro ? `${id}-erro` : undefined,
   } as const;
 }
-
-/* ---------- Ícones ---------- */
 
 const base = {
   viewBox: "0 0 24 24",
@@ -538,7 +545,7 @@ function IconeEscudo() {
 
 function IconeRelogio() {
   return (
-    <svg {...base} className="h-[18px] w-[18px] shrink-0">
+    <svg {...base} className="h-4.5 w- shrink-0">
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v5l3 2" />
     </svg>

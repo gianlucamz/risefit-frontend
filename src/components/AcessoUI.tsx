@@ -43,7 +43,7 @@ export function CampoSenha({
   autoComplete = "current-password",
 }: {
   id: string;
-  rotulo: string;
+  rotulo: React.ReactNode;
   valor: string;
   placeholder: string;
   aoMudar: (novoValor: string) => void;
@@ -91,7 +91,10 @@ export function CampoSenha({
         </button>
       </div>
       {erro ? (
-        <p id={`${id}-erro`} className="mt-1.5 text-xs font-medium text-red-600">
+        <p
+          id={`${id}-erro`}
+          className="mt-1.5 text-xs font-medium text-red-600"
+        >
           {erro}
         </p>
       ) : (
@@ -155,7 +158,7 @@ export function AlertaErro({ children }: { children: React.ReactNode }) {
   return (
     <p
       role="alert"
-      className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-left text-sm text-red-700"
+      className="px-4 py-3 text-left text-sm text-red-700"
     >
       {children}
     </p>
@@ -166,7 +169,7 @@ export function AlertaSucesso({ children }: { children: React.ReactNode }) {
   return (
     <p
       role="status"
-      className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-left text-sm text-green-800"
+      className="px-4 py-3 text-left text-sm text-brand"
     >
       {children}
     </p>

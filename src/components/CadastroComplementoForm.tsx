@@ -156,22 +156,22 @@ export default function CadastroComplementoForm({
   const [erroGeral, setErroGeral] = useState("");
   const [carregando, setCarregando] = useState(false);
   const [planoParam] = useState<string>(() => {
-  if (typeof window === "undefined") return "";
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const param = params.get("plano");
-    const salvo = sessionStorage.getItem("risefit_plano_escolhido") || "";
-    const planoDefinido = (param || salvo).toLowerCase();
+    if (typeof window === "undefined") return "";
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const param = params.get("plano");
+      const salvo = sessionStorage.getItem("risefit_plano_escolhido") || "";
+      const planoDefinido = (param || salvo).toLowerCase();
 
-    if (param) {
-      sessionStorage.setItem("risefit_plano_escolhido", planoDefinido);
+      if (param) {
+        sessionStorage.setItem("risefit_plano_escolhido", planoDefinido);
+      }
+
+      return planoDefinido;
+    } catch {
+      return "";
     }
-
-    return planoDefinido;
-  } catch {
-    return "";
-  }
-});
+  });
 
   const opcoesSexo: OpcaoSelect[] = [
     { valor: "Feminino", rotulo: "Feminino" },
