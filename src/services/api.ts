@@ -377,3 +377,188 @@ export async function cadastrarAlunoComPlanoAPI(
         assinatura,
     };
 }
+
+export interface ServicoProfissionalAPI {
+    profissionalId: number;
+    servicoId: number;
+    servico: {
+        id: number;
+        nome: string;
+        descricao?: string | null;
+        ativo: boolean;
+    };
+}
+
+export interface ProfissionalAPI {
+    id: number;
+    usuarioId: number;
+    especializacao: string;
+    biografia?: string | null;
+    urlFoto?: string | null;
+    ativo: boolean;
+    criadoEm?: string;
+    atualizadoEm?: string;
+    usuario?: {
+        id: number;
+        nome: string;
+        email: string;
+    };
+    servicos?: ServicoProfissionalAPI[];
+}
+
+export type ObjetivoId =
+    | 'musculo'
+    | 'emagrecer'
+    | 'condicionamento'
+    | 'lesao'
+    | 'alimentacao';
+
+export interface PerfilProfissional {
+    cargo: string;
+    artigo: 'a' | 'o';
+    resumo: string;
+    sobre: string;
+    especialidades: string[];
+    formacao: string[];
+    local: string;
+    online: boolean;
+    horario: string;
+}
+
+export interface Profissional {
+    id: string;
+    nome: string;
+    descricao: string;
+    especialidades: string[];
+    objetivos: ObjetivoId[];
+    foto: string;
+    fotoPosicao?: string;
+    perfil: PerfilProfissional;
+}
+
+export const OBJETIVOS_PROFISSIONAIS: { id: ObjetivoId; rotulo: string[] }[] = [
+    { id: 'musculo', rotulo: ['Ganhar massa', 'muscular'] },
+    { id: 'emagrecer', rotulo: ['Emagrecer'] },
+    { id: 'condicionamento', rotulo: ['Melhorar o', 'condicionamento'] },
+    { id: 'lesao', rotulo: ['Recuperar de lesão'] },
+    { id: 'alimentacao', rotulo: ['Melhorar minha', 'alimentação'] },
+];
+
+function inferirObjetivosProfissional(texto: string): ObjetivoId[] {
+    const t = texto.toLowerCase();
+    const encontrados: ObjetivoId[] = [];
+
+    if (t.includes('hipertrofia') || t.includes('força') || t.includes('muscul') || t.includes('personal')) {
+        encontrados.push('musculo');
+    }
+    if (t.includes('emagrec') || t.includes('gordura') || t.includes('peso')) {
+        encontrados.push('emagrecer');
+    }
+    if (t.includes('condicion') || t.includes('funcional') || t.includes('resist') || t.includes('mobilidade')) {
+        encontrados.push('condicionamento');
+    }
+    if (t.includes('reabilit') || t.includes('les') || t.includes('dor') || t.includes('fisioter')) {
+        encontrados.push('lesao');
+    }
+    if (t.includes('nutri') || t.includes('aliment') || t.includes('saúde')) {
+        encontrados.push('alimentacao');
+    }
+
+    return encontrados.length > 0 ? encontrados : ['condicionamento'];
+}
+
+export function mapearProfissionalAPI(item: ProfissionalAPI): Profissional {
+    const nome = item.usuario?.nome?.trim() || 'Profissional RiseFit';
+    const especializacao = item.especializacao?.trim() || 'Especialista RiseFit';
+    const cargo = especializacao.split(/[•(]/)[0].trim() || especializacao;
+
+    const servicosNomes = (item.servicos ?? [])
+        .filter((s) => s.servico && s.servico.ativo !== false)
+        .map((s) => s.servico.nome.trim())
+        .filter(Boolean);
+
+    const especialidades =
+        servicosNomes.length > 0 ? servicosNomes : [cargo];
+
+    const foto = item.urlFoto?.trim() || '';
+    const fotoPosicao = foto.includes('prof-mariana')
+        ? '50% 26%'
+        : foto.includes('prof-rafael')
+            ? '50% 0%'
+            : '50% 50%';
+
+    const primeiroNome = nome.split(/\s+/)[0]?.toLowerCase() ?? '';
+    const artigo: 'a' | 'o' = primeiroNome.endsWith('a') ? 'a' : 'o';
+    const biografia =
+        item.biografia?.trim() ||
+        'Especialista RiseFit com foco em acompanhamento próximo, evolução consistente e saúde.';
+
+    return {
+        id: String(item.id),
+        nome,
+        descricao: biografia,
+        especialidades,
+        objetivos: inferirObjetivosProfissional(`${especializacao} ${especialidades.join(' ')}`),
+        foto,
+        fotoPosicao,
+        perfil: {
+            cargo,
+            artigo,
+            resumo: especialidades.slice(0, 2).join(' e ') || cargo,
+            sobre: biografia,
+            especialidades,
+            formacao: [especializacao],
+            local: 'Atendimento em Caraguatatuba – SP',
+            online: true,
+            horario: 'Segunda a sexta • 7h às 20h',
+        },
+    };
+}
+
+function extrairListaProfissionais(dados: unknown): ProfissionalAPI[] {
+    if (Array.isArray(dados)) return dados as ProfissionalAPI[];
+    if (isRecord(dados) && Array.isArray(dados.data)) {
+        return dados.data as ProfissionalAPI[];
+    }
+    return [];
+}
+
+function extrairProfissional(dados: unknown): ProfissionalAPI | null {
+    if (!isRecord(dados)) return null;
+    if (isRecord(dados.data)) return dados.data as unknown as ProfissionalAPI;
+    if (dados.id !== undefined) return dados as unknown as ProfissionalAPI;
+    return null;
+}
+
+export async function obterProfissionaisAPI(): Promise<ProfissionalAPI[]> {
+    const dados = await solicitarAPI<unknown>('/professionals', {
+        method: 'GET',
+        cache: 'no-store',
+    });
+    return extrairListaProfissionais(dados);
+}
+
+export async function obterProfissionalPorIdAPI(
+    id: number | string
+): Promise<ProfissionalAPI | null> {
+    const idNumerico = Number(id);
+    if (!Number.isSafeInteger(idNumerico) || idNumerico <= 0) {
+        return null;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/professionals/${idNumerico}`, {
+        method: 'GET',
+        cache: 'no-store',
+    });
+
+    if (response.status === 404 || response.status === 400) {
+        return null;
+    }
+
+    if (!response.ok) {
+        throw new Error(`Não foi possível carregar o profissional (HTTP ${response.status}).`);
+    }
+
+    const dados: unknown = await response.json().catch(() => null);
+    return extrairProfissional(dados);
+}

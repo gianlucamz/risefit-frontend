@@ -1,14 +1,17 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import ProfissionalCard from "./ProfissionalCard";
-import { Botao, IconeBusca, PainelEstado } from "./PainelUI";
-import { objetivos, profissionais, type ObjetivoId } from "@/data/profissionais";
+import { Botao, IconeAlerta, IconeBusca, PainelEstado } from "./PainelUI";
+import {
+  mapearProfissionalAPI,
+  OBJETIVOS_PROFISSIONAIS,
+  obterProfissionaisAPI,
+  type ObjetivoId,
+  type Profissional,
+} from "@/services/api";
 
-// Dados de demonstração dos profissionais ficam em src/data/profissionais.ts
-// (os mesmos usados na página de perfil /profissionais/[id]).
-
-type Ordem = "relevancia" | "avaliacao" | "avaliacoes" | "nome";
+type Ordem = "relevancia" | "nome";
 
 const stroke = {
   width: 28,
@@ -51,32 +54,72 @@ const icones: Record<ObjetivoId, ReactNode> = {
   ),
 };
 
-export default function ProfissionaisExplorar() {
+export default function ProfissionaisExplorar({
+  profissionaisIniciais = [],
+  erroInicial = false,
+}: {
+  profissionaisIniciais?: Profissional[];
+  erroInicial?: boolean;
+}) {
+  const [listaProfissionais, setListaProfissionais] = useState<Profissional[]>(
+    profissionaisIniciais,
+  );
+  const [carregando, setCarregando] = useState(
+    erroInicial && profissionaisIniciais.length === 0,
+  );
+  const [erro, setErro] = useState(false);
+
   const [objetivo, setObjetivo] = useState<ObjetivoId | null>(null);
   const [busca, setBusca] = useState("");
   const [especialidade, setEspecialidade] = useState("");
   const [ordem, setOrdem] = useState<Ordem>("relevancia");
 
+  const carregarProfissionais = useCallback(async () => {
+    setCarregando(true);
+    setErro(false);
+    try {
+      const dados = await obterProfissionaisAPI();
+      setListaProfissionais(
+        Array.isArray(dados) ? dados.map(mapearProfissionalAPI) : [],
+      );
+    } catch {
+      setErro(true);
+    } finally {
+      setCarregando(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!erroInicial && profissionaisIniciais.length > 0) return;
+
+    const timer = setTimeout(() => {
+      void carregarProfissionais();
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [erroInicial, profissionaisIniciais.length, carregarProfissionais]);
+
   // Lista de especialidades vem dos próprios dados
   const especialidades = useMemo(
-    () => Array.from(new Set(profissionais.flatMap((p) => p.especialidades))).sort(),
-    [],
+    () =>
+      Array.from(
+        new Set(listaProfissionais.flatMap((p) => p.especialidades)),
+      ).sort(),
+    [listaProfissionais],
   );
 
   const resultado = useMemo(() => {
     const termo = busca.trim().toLowerCase();
-    const lista = profissionais.filter(
+    const lista = listaProfissionais.filter(
       (p) =>
         (!termo || p.nome.toLowerCase().includes(termo)) &&
         (!especialidade || p.especialidades.includes(especialidade)) &&
         (!objetivo || p.objetivos.includes(objetivo)),
     );
 
-    if (ordem === "avaliacao") lista.sort((a, b) => b.avaliacao - a.avaliacao || b.avaliacoes - a.avaliacoes);
-    if (ordem === "avaliacoes") lista.sort((a, b) => b.avaliacoes - a.avaliacoes);
     if (ordem === "nome") lista.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
     return lista;
-  }, [busca, especialidade, objetivo, ordem]);
+  }, [listaProfissionais, busca, especialidade, objetivo, ordem]);
 
   const campo =
     "h-11 bg-transparent px-3 text-sm text-dark outline-none";
@@ -96,7 +139,7 @@ export default function ProfissionaisExplorar() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {objetivos.map((item) => {
+            {OBJETIVOS_PROFISSIONAIS.map((item) => {
               const ativo = objetivo === item.id;
               return (
                 <button
@@ -156,8 +199,6 @@ export default function ProfissionaisExplorar() {
             className={`${campo} border-t border-gray-200 md:border-l md:border-t-0`}
           >
             <option value="relevancia">Ordenar: relevância</option>
-            <option value="avaliacao">Melhor avaliação</option>
-            <option value="avaliacoes">Mais avaliações</option>
             <option value="nome">Nome (A–Z)</option>
           </select>
         </div>
@@ -169,11 +210,44 @@ export default function ProfissionaisExplorar() {
           </p>
           <h2 className="mt-2 text-3xl font-extrabold text-dark">Conheça nossos profissionais</h2>
 
-          {resultado.length > 0 ? (
+          {carregando ? (
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3].map((item) => (
+                <div
+                  key={item}
+                  className="h-[462px] animate-pulse rounded-xl border border-gray-200 bg-white"
+                />
+              ))}
+            </div>
+          ) : erro ? (
+            <div className="mx-auto mt-8 max-w-xl">
+              <PainelEstado
+                icone={<IconeAlerta />}
+                titulo="Não foi possível carregar os profissionais"
+                descricao="Verifique sua conexão com o servidor e tente novamente."
+              >
+                <Botao
+                  variante="secundario"
+                  larguraTotal
+                  onClick={() => void carregarProfissionais()}
+                >
+                  Tentar novamente
+                </Botao>
+              </PainelEstado>
+            </div>
+          ) : resultado.length > 0 ? (
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {resultado.map((p) => (
                 <ProfissionalCard key={p.id} profissional={p} />
               ))}
+            </div>
+          ) : listaProfissionais.length === 0 ? (
+            <div className="mx-auto mt-8 max-w-xl">
+              <PainelEstado
+                icone={<IconeBusca />}
+                titulo="Nenhum profissional cadastrado"
+                descricao="Ainda não há profissionais disponíveis no catálogo no momento."
+              />
             </div>
           ) : (
             <div className="mx-auto mt-8 max-w-xl">

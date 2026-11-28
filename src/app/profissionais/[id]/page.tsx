@@ -2,21 +2,28 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import AvaliacoesProfissional from "@/components/AvaliacoesProfissional";
-import { profissionais, profissionalPorId } from "@/data/profissionais";
+import {
+  mapearProfissionalAPI,
+  obterProfissionalPorIdAPI,
+} from "@/services/api";
 
-export function generateStaticParams() {
-  return profissionais.map((p) => ({ id: p.id }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/profissionais/[id]">): Promise<Metadata> {
   const { id } = await params;
-  const profissional = profissionalPorId(id);
-  return {
-    title: profissional ? `${profissional.nome} | RiseFit` : "Profissional | RiseFit",
-  };
+  try {
+    const dados = await obterProfissionalPorIdAPI(id);
+    const profissional = dados ? mapearProfissionalAPI(dados) : null;
+    return {
+      title: profissional
+        ? `${profissional.nome} | RiseFit`
+        : "Profissional | RiseFit",
+    };
+  } catch {
+    return { title: "Profissional | RiseFit" };
+  }
 }
 
 // Página de perfil do profissional. Medidas do modelo (1440px): faixa escura de 188px,
@@ -25,13 +32,18 @@ export default async function PerfilProfissionalPage({
   params,
 }: PageProps<"/profissionais/[id]">) {
   const { id } = await params;
-  const profissional = profissionalPorId(id);
+  const dados = await obterProfissionalPorIdAPI(id).catch(() => null);
+  const profissional = dados ? mapearProfissionalAPI(dados) : null;
   if (!profissional) notFound();
 
   const { perfil } = profissional;
-  const nota = profissional.avaliacao.toFixed(1).replace(".", ",");
   const contato = "/contato#contato";
   const tratamento = perfil.artigo === "a" ? "a profissional" : "o profissional";
+  const iniciais = profissional.nome
+    .split(" ")
+    .map((parte) => parte[0])
+    .slice(0, 2)
+    .join("");
 
   return (
     <main className="relative bg-[#f7f8fa] pb-12 lg:pb-12.5">
@@ -53,15 +65,21 @@ export default async function PerfilProfissionalPage({
           {/* ---------- Topo: foto, dados e especialidades ---------- */}
           <div className="grid gap-6 p-5 lg:grid-cols-[354px_1fr_331px] lg:gap-0 lg:pt-11.5 lg:pr-11 lg:pb-10 lg:pl-16.25">
             <div className="relative aspect-[354/264] w-full overflow-hidden rounded-2xl bg-dark lg:h-66 lg:w-88.5">
-              <Image
-                src={profissional.foto}
-                alt={`Foto de ${profissional.nome}`}
-                fill
-                priority
-                sizes="(min-width: 1024px) 354px, 100vw"
-                className="object-cover"
-                style={{ objectPosition: profissional.fotoPosicao ?? "50% 50%" }}
-              />
+              {profissional.foto ? (
+                <Image
+                  src={profissional.foto}
+                  alt={`Foto de ${profissional.nome}`}
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 354px, 100vw"
+                  className="object-cover"
+                  style={{ objectPosition: profissional.fotoPosicao ?? "50% 50%" }}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center font-display text-6xl text-brand">
+                  {iniciais}
+                </div>
+              )}
             </div>
 
             <div className="lg:pt-6 lg:pl-9">
@@ -73,13 +91,6 @@ export default async function PerfilProfissionalPage({
                   {perfil.cargo}
                 </span>
               </div>
-
-              <p className="mt-4 flex items-center gap-4 text-[15px] font-semibold text-dark">
-                <svg width="17" height="16" viewBox="0 0 24 23" fill="currentColor" className="text-brand" aria-hidden="true">
-                  <path d="M12 .8l3.4 7.1 7.8 1-5.7 5.4 1.4 7.7L12 18.2 5.1 22l1.4-7.7L.8 8.9l7.8-1z" />
-                </svg>
-                {nota} ({perfil.avaliacoes} avaliações)
-              </p>
 
               <p className="mt-6 text-base text-gray-700">{perfil.resumo}</p>
 
@@ -141,12 +152,12 @@ export default async function PerfilProfissionalPage({
             </aside>
           </div>
 
-          {/* ---------- Base: sobre, avaliações e atendimento ---------- */}
-          <div className="grid border-t border-[#e3e7ec] lg:grid-cols-[504px_387px_1fr]">
-            <section className="border-b border-[#e3e7ec] p-5 lg:border-r lg:border-b-0 lg:pt-9 lg:pr-5 lg:pb-9 lg:pl-8">
+          {/* ---------- Base: sobre e atendimento ---------- */}
+          <div className="grid border-t border-[#e3e7ec] lg:grid-cols-[1fr_387px]">
+            <section className="border-b border-[#e3e7ec] p-5 lg:border-r lg:border-b-0 lg:pt-9 lg:pr-8 lg:pb-9 lg:pl-8">
               <h2 className="text-[17px] font-bold text-dark">Sobre {tratamento}</h2>
               <p className="mt-5 text-sm leading-5 text-gray-700">{perfil.sobre}</p>
-              <ul className="mt-8 flex flex-wrap gap-x-4 gap-y-4 text-[11px] leading-3.5 font-semibold text-dark lg:mt-16 lg:flex-nowrap lg:gap-x-4">
+              <ul className="mt-8 flex flex-wrap gap-x-4 gap-y-4 text-[11px] leading-3.5 font-semibold text-dark lg:mt-16 lg:flex-nowrap lg:gap-x-6">
                 <li className="flex items-center gap-3.5">
                   <svg width="28" height="25" viewBox="0 0 28 25" fill="none" stroke="currentColor" strokeWidth="1.8" className="shrink-0 text-brand" aria-hidden="true">
                     <path d="M14 23.5S1.5 16 1.5 7.8A6.3 6.3 0 0 1 14 5a6.3 6.3 0 0 1 12.5 2.8C26.5 16 14 23.5 14 23.5z" />
@@ -173,9 +184,7 @@ export default async function PerfilProfissionalPage({
               </ul>
             </section>
 
-            <AvaliacoesProfissional depoimentos={perfil.depoimentos} />
-
-            <section className="m-3 rounded-xl bg-[#f4effe] p-4 lg:m-3 lg:mt-0 lg:mb-3 lg:px-4 lg:pt-6 lg:pb-3">
+            <section className="m-3 rounded-xl bg-[#f4effe] p-4 lg:m-3 lg:mt-3 lg:mb-3 lg:px-4 lg:pt-6 lg:pb-3">
               <div className="flex items-start gap-5">
                 <svg width="30" height="32" viewBox="0 0 30 32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="mt-0.5 shrink-0 text-brand" aria-hidden="true">
                   <rect x="1.5" y="4.5" width="27" height="26" rx="3" />
@@ -199,7 +208,7 @@ export default async function PerfilProfissionalPage({
                     </svg>
                   }
                   titulo="Presencial"
-                  detalhe="Atendimento em Caraguatatuba – SP"
+                  detalhe={perfil.local}
                 />
                 {perfil.online && (
                   <LinhaAtendimento

@@ -3,13 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import type { Profissional } from "@/data/profissionais";
+import type { Profissional } from "@/services/api";
 
 export default function ProfissionalCard({ profissional }: { profissional: Profissional }) {
-  // Se a foto não carregar, mostra um fundo escuro com as iniciais
+  // Se a foto não existir ou não carregar, mostra um fundo escuro com as iniciais
   const [fotoFalhou, setFotoFalhou] = useState(false);
 
-  const nota = profissional.avaliacao.toFixed(1).replace(".", ",");
+  const mostrarIniciais = fotoFalhou || !profissional.foto;
   const iniciais = profissional.nome
     .split(" ")
     .map((parte) => parte[0])
@@ -20,7 +20,7 @@ export default function ProfissionalCard({ profissional }: { profissional: Profi
     <article className="flex flex-col bg-white pb-[10px] lg:h-[462px]">
       {/* Foto */}
       <div className="relative h-[180px] shrink-0 bg-dark sm:h-[200px] lg:h-[180px]">
-        {fotoFalhou ? (
+        {mostrarIniciais ? (
           <div className="absolute inset-0 flex items-center justify-center font-display text-6xl text-brand">
             {iniciais}
           </div>
@@ -42,17 +42,11 @@ export default function ProfissionalCard({ profissional }: { profissional: Profi
           {profissional.nome}
         </h3>
 
-        {/* Avaliação */}
-        <p className="mt-[17px] flex items-center text-sm font-bold leading-none text-black lg:ml-[22px]">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-brand" aria-hidden="true">
-            <path d="M12 1.8l3.1 6.9 7.4.8-5.6 5 1.6 7.4L12 18.1l-6.5 3.8 1.6-7.4-5.6-5 7.4-.8z" />
-          </svg>
-          <span className="ml-[9px]">
-            {nota}({profissional.avaliacoes} avaliações)
-          </span>
+        <p className="mt-[17px] text-xs font-semibold uppercase tracking-wide text-brand lg:ml-[22px]">
+          {profissional.perfil.cargo}
         </p>
 
-        <p className="mt-[22px] text-sm leading-[19px] text-black lg:ml-[25px] lg:mr-[14px]">
+        <p className="mt-[18px] text-sm leading-[19px] text-black lg:ml-[25px] lg:mr-[14px]">
           {profissional.descricao}
         </p>
 
