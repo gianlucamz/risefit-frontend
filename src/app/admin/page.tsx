@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import AdminProfissionais from "@/components/AdminProfissionais";
 import { formatarMoeda } from "@/data/aluno";
 import { useUsuarioLogado } from "@/lib/sessao";
+import { obterProfissionaisAPI } from "@/services/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 const PIN_ADMIN = "RiseFit@2026";
@@ -40,6 +42,10 @@ export default function AdminSolicitacoesPage() {
   const [autorizadoManual, setAutorizadoManual] = useState(false);
 
   const [assinaturas, setAssinaturas] = useState<AssinaturaAdmin[]>([]);
+  const [totalProfissionais, setTotalProfissionais] = useState(0);
+  const [secaoAtiva, setSecaoAtiva] = useState<"assinaturas" | "profissionais">(
+    "assinaturas",
+  );
   const [filtroStatus, setFiltroStatus] = useState("TODAS");
   const [busca, setBusca] = useState("");
   const [carregando, setCarregando] = useState(true);
@@ -79,9 +85,14 @@ export default function AdminSolicitacoesPage() {
 
     let ativo = true;
 
-    buscarAssinaturas()
-      .then((dados) => {
-        if (ativo) setAssinaturas(dados);
+    Promise.all([
+      buscarAssinaturas(),
+      obterProfissionaisAPI(true).catch(() => []),
+    ])
+      .then(([dadosAssinaturas, dadosProfissionais]) => {
+        if (!ativo) return;
+        setAssinaturas(dadosAssinaturas);
+        setTotalProfissionais(dadosProfissionais.length);
       })
       .catch((e) => {
         if (ativo) {
@@ -294,16 +305,79 @@ export default function AdminSolicitacoesPage() {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
         <header className="border-b border-gray-200 pb-6">
           <h1 className="text-2xl font-bold text-dark sm:text-3xl">
-            Painel de Solicitações
+            {secaoAtiva === "assinaturas"
+              ? "Painel de Solicitações"
+              : "Gestão de Profissionais"}
           </h1>
 
           <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-500">
-            Aprove ou recuse novas solicitações de planos e acompanhe o status
-            das assinaturas.
+            {secaoAtiva === "assinaturas"
+              ? "Aprove ou recuse novas solicitações de planos e acompanhe o status das assinaturas."
+              : "Cadastre, filtre, edite e gerencie os profissionais exibidos no catálogo da RiseFit."}
           </p>
         </header>
 
-        <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid gap-6 lg:grid-cols-[240px_1fr] lg:items-start">
+          <aside className="border border-gray-200 bg-white lg:sticky lg:top-24">
+            <div className="border-b border-gray-200 px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                Administração
+              </p>
+            </div>
+            <nav
+              aria-label="Navegação administrativa"
+              className="grid grid-cols-2 divide-x divide-gray-200 lg:grid-cols-1 lg:divide-x-0 lg:divide-y"
+            >
+              <button
+                type="button"
+                onClick={() => setSecaoAtiva("assinaturas")}
+                className={`flex cursor-pointer items-center justify-between px-4 py-3 text-left text-sm font-semibold transition-colors ${
+                  secaoAtiva === "assinaturas"
+                    ? "bg-brand text-white"
+                    : "bg-white text-dark hover:bg-gray-50"
+                }`}
+              >
+                <span>Assinaturas</span>
+                <span
+                  className={`px-2 py-0.5 text-xs ${
+                    secaoAtiva === "assinaturas"
+                      ? "bg-white/20 text-white"
+                      : "bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  {pendentes.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSecaoAtiva("profissionais")}
+                className={`flex cursor-pointer items-center justify-between px-4 py-3 text-left text-sm font-semibold transition-colors ${
+                  secaoAtiva === "profissionais"
+                    ? "bg-brand text-white"
+                    : "bg-white text-dark hover:bg-gray-50"
+                }`}
+              >
+                <span>Profissionais</span>
+                <span
+                  className={`px-2 py-0.5 text-xs ${
+                    secaoAtiva === "profissionais"
+                      ? "bg-white/20 text-white"
+                      : "bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  {totalProfissionais}
+                </span>
+              </button>
+            </nav>
+          </aside>
+
+          <div className="flex min-w-0 flex-col gap-6">
+            {secaoAtiva === "profissionais" ? (
+              <AdminProfissionais onTotalChange={setTotalProfissionais} />
+            ) : (
+              <>
+                <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <div className="border border-gray-200 p-4 sm:p-5">
             <p className="text-sm text-gray-500">Pendentes</p>
             <p className="mt-2 text-3xl font-bold text-dark">
@@ -607,6 +681,10 @@ export default function AdminSolicitacoesPage() {
             )}
           </div>
         </section>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </main>
   );

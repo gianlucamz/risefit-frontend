@@ -71,6 +71,7 @@ export default async function PerfilProfissionalPage({
                   alt={`Foto de ${profissional.nome}`}
                   fill
                   priority
+                  unoptimized={profissional.foto.startsWith("data:")}
                   sizes="(min-width: 1024px) 354px, 100vw"
                   className="object-cover"
                   style={{ objectPosition: profissional.fotoPosicao ?? "50% 50%" }}

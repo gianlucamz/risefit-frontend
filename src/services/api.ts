@@ -530,12 +530,63 @@ function extrairProfissional(dados: unknown): ProfissionalAPI | null {
     return null;
 }
 
-export async function obterProfissionaisAPI(): Promise<ProfissionalAPI[]> {
-    const dados = await solicitarAPI<unknown>('/professionals', {
+export async function obterProfissionaisAPI(
+    incluirInativos = false
+): Promise<ProfissionalAPI[]> {
+    const query = incluirInativos ? '?incluirInativos=true' : '';
+    const dados = await solicitarAPI<unknown>(`/professionals${query}`, {
         method: 'GET',
         cache: 'no-store',
     });
     return extrairListaProfissionais(dados);
+}
+
+export interface CriarProfissionalPayload {
+    nome: string;
+    email: string;
+    telefone?: string;
+    especializacao: string;
+    biografia?: string;
+    urlFoto?: string;
+    servicos?: string[];
+    ativo?: boolean;
+}
+
+export interface AtualizarProfissionalPayload {
+    nome?: string;
+    email?: string;
+    especializacao?: string;
+    biografia?: string | null;
+    urlFoto?: string | null;
+    servicos?: string[];
+    ativo?: boolean;
+}
+
+export async function criarProfissionalAPI(
+    payload: CriarProfissionalPayload
+): Promise<ProfissionalAPI> {
+    return solicitarAPI<ProfissionalAPI>('/professionals', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+}
+
+export async function atualizarProfissionalAPI(
+    id: number,
+    payload: AtualizarProfissionalPayload
+): Promise<ProfissionalAPI> {
+    return solicitarAPI<ProfissionalAPI>(`/professionals/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+    });
+}
+
+export async function excluirProfissionalAPI(
+    id: number
+): Promise<ProfissionalAPI> {
+    return solicitarAPI<ProfissionalAPI>(`/professionals/${id}`, {
+        method: 'DELETE',
+    });
 }
 
 export async function obterProfissionalPorIdAPI(
